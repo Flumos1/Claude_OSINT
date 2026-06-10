@@ -16,6 +16,7 @@
 | Инструмент | Назначение | Заметка |
 |-----------|-----------|---------|
 | Maltego | Граф-разведка, трансформы | GUI, есть free (Community) |
+| flowsint | Open-source граф-платформа (self-host Maltego) | Apache-2.0, Docker; см. [flowsint-integration.md](flowsint-integration.md) |
 | SpiderFoot | Автоматизированный OSINT-скан по 200+ модулям | self-host, веб-UI |
 | recon-ng | Модульный recon-фреймворк | CLI, как metasploit для OSINT |
 | theHarvester | Сбор email/поддоменов/хостов по домену | быстрый старт по компании |

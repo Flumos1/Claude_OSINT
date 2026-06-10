@@ -18,6 +18,7 @@ Copy-Item .env.example .env   # затем заполни ключи (опцио
 |--------|-----------|----------|
 | `domain_recon.py` | RDAP + crt.sh поддомены + DNS + Wayback по домену | не нужен |
 | `fetch_awesome_osint.py` | Локальный индекс 1400+ инструментов из awesome-osint + поиск | не нужен |
+| `enrich.py` + `enrichers/` | Раннер энричеров (по мотивам flowsint): сущность → граф | не нужен |
 
 ```powershell
 # Разведка по домену
@@ -27,7 +28,22 @@ python domain_recon.py example.com --json ..\cases\<slug>\data\example.com.json
 python fetch_awesome_osint.py
 # Поиск инструмента по локальному индексу
 python fetch_awesome_osint.py --search username
+
+# Энричеры: обогащение сущности до графа (узлы/связи/факты)
+python enrich.py --list
+python enrich.py domain example.com --json ..\cases\<slug>\data\graph.json
+python enrich.py company 7707083893     # валидация ИНН/ОГРН + ссылки на реестры РФ
+python enrich.py ip 8.8.8.8
+python enrich.py email user@example.com
 ```
+
+## Архитектура энричеров
+
+`enrichers/` — модули по контракту «сущность → граф», по мотивам flowsint
+(см. [knowledge/flowsint-integration.md](../knowledge/flowsint-integration.md)).
+Граф-вывод (nodes/edges) совместим с Neo4j — позже импортируем во flowsint.
+Добавить энричер: файл в `enrichers/`, функция `fn(value)->EnricherResult` с
+`@enricher("имя","тип")`, импорт в `enrichers/__init__.py`.
 
 ## Что добавить дальше (бэклог)
 
