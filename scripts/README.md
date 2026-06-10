@@ -50,23 +50,31 @@ python enrich.py email user@example.com
 Добавить энричер: файл в `enrichers/`, функция `fn(value)->EnricherResult` с
 `@enricher("имя","тип")`, импорт в `enrichers/__init__.py`.
 
+## Реализованные энричеры
+
+| Энричер | Тип [страна] | Источник | Ключ |
+|---------|--------------|----------|------|
+| `ua_company_links` | company [ua] | валидация ЄДРПОУ + ссылки на реестры | — |
+| `prozorro` | company [ua] | **ProZorro API** (тендеры по коду) | — ✅ |
+| `opendatabot` | company [ua] | Opendatabot API (карточка компании) | ODB_API_KEY |
+| `ua_person_links` | person [ua] | валидация РНОКПП + ссылки (ЄРБ/АСВП/reyestr…) | — |
+| `nazk_declarations` | person [ua] | **НАЗК API** (декларації посадовців) | — ✅ |
+| `ru_company_links` | company [ru] | валидация ИНН/ОГРН + ссылки на реестры РФ | — |
+| `domain_recon` | domain | RDAP/crt.sh/DNS/Wayback | — |
+| `ip_geo_asn` | ip | гео/ASN (ip-api) | — |
+| `email_gravatar` | email | Gravatar + пивот в домен | — |
+| `username_sweep` | username | быстрый чек ника по 12 платформам | — ✅ |
+
+✅ = бесплатно, без ключа, работает «из коробки».
+
 ## Бэклог энричеров (по образцу каталога flowsint)
 
-🇺🇦 **Украина (приоритет):**
-- `opendatabot` — расширить: CourtService (судові рішення), PenaltyService (ЄРБ/виконавчі),
-  RealEstateService (по ключу ODB_API_KEY).
-- `youcontrol` — YouScore API (бенефіціари, зв'язки, скоринг) по ключу.
-- `nazk_declarations` — открытое API НАЗК (декларації посадовців, без ключа).
-- `prozorro` — открытое API закупок по ЄДРПОУ.
-
-**Нейтральные (любая страна), приоритет по flowsint-энричерам, которых у нас нет:**
-- `domain.to_ssl`, `domain.to_whois_history` — сертификаты, история whois.
-- `ip.to_ports` — Shodan/Censys (открытые порты).
-- `username.to_maigret / to_sherlock` — ник по платформам.
-- `phone.to_carrier / to_infos` — оператор/регион телефона.
-- `email.to_leaks` (HIBP, свои/авторизованные), `email.to_username`.
-- `crypto.to_transactions / to_nfts` — блокчейн.
-- `ioc` — VirusTotal/AbuseIPDB/GreyNoise; `typosquat` — dnstwist; `archive_page` — Playwright/Wayback.
+🇺🇦 **Украина:** `opendatabot` расширить (CourtService/PenaltyService/RealEstateService по ключу);
+`youcontrol` (YouScore API, по ключу).
+**Нейтральные (которых нет, приоритет по flowsint):** `domain.ssl/whois_history`,
+`ip.ports` (Shodan), `username.maigret` (глубже sweep), `phone.carrier`,
+`email.leaks` (HIBP, свои/авторизованные), `crypto`, `ioc` (VT/AbuseIPDB/GreyNoise),
+`typosquat` (dnstwist), `archive_page` (Playwright/Wayback).
 
 > Принцип: пассивные источники по умолчанию; ключи и .env — вне репозитория;
 > результаты складывай в `cases/<slug>/data/`. Полный список flowsint-энричеров как
