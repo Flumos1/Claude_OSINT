@@ -155,12 +155,24 @@ views.person = () => {
       countries: $$(".pform-countries .cb input:checked").map(c => c.value),
     };
     if (!body.name) return;
+    state.lastPersonQuery = body;
     const out = $("#person-result");
     out.innerHTML = `<div class="panel"><div class="panel-body loading"><span class="spin">◴</span> Поиск по реестрам…</div></div>`;
     try { renderDossier(await api.person(body)); }
     catch (err) { out.innerHTML = `<div class="panel"><div class="panel-body"><span class="f-tag ERROR">ERROR</span> ${esc(err.message)}</div></div>`; }
   });
 };
+
+async function downloadReport() {
+  if (!state.lastPersonQuery) return;
+  const r = await fetch("/api/person/report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(state.lastPersonQuery) });
+  const { markdown } = await r.json();
+  const blob = new Blob([markdown], { type: "text/markdown" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `dossier-${(state.lastPersonQuery.name || "person").replace(/\s+/g, "_")}.md`;
+  a.click(); URL.revokeObjectURL(a.href);
+}
 
 function renderDossier(d) {
   $("#basis-bar").textContent = d.basis;
@@ -173,7 +185,8 @@ function renderDossier(d) {
     <div class="reg-group"><h3>${c === "ua" ? "🇺🇦 Украина" : c === "ru" ? "🇷🇺 Россия" : "🌍 Международные"}</h3>
       ${items.map(r => `<div class="reg-item"><span class="reg-name"><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a></span><span class="reg-note">${esc(r.note)}</span></div>`).join("")}</div>`).join("");
   out.innerHTML = `
-    <div class="panel dossier-section"><div class="panel-head"><h2>Варианты написания (recall)</h2></div>
+    <div class="panel dossier-section"><div class="panel-head"><h2>Варианты написания (recall)</h2>
+      <button class="btn" id="dl-report" type="button">↓ Отчёт (.md)</button></div>
       <div class="panel-body variants">${d.name_variants.map(v => `<span class="badge">${esc(v)}</span>`).join("")}</div></div>
     <div class="panel dossier-section"><div class="panel-head"><h2>Находки (живые источники)</h2></div>
       <div class="panel-body">${findings || '<span class="muted">Прямых находок нет — используй ссылки на реестры ниже.</span>'}</div></div>
@@ -183,6 +196,7 @@ function renderDossier(d) {
       <div class="panel-body">${regs}</div></div>
     <div class="panel dossier-section"><div class="panel-head"><h2>Правовые ограничения</h2></div>
       <div class="panel-body"><ul class="notes-list">${d.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul></div></div>`;
+  $("#dl-report")?.addEventListener("click", downloadReport);
   drawGraph(d);
 }
 

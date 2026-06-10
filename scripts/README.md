@@ -64,6 +64,8 @@ python enrich.py email user@example.com
 | `domain_recon` | domain | RDAP/crt.sh/DNS/Wayback | — |
 | `ip_geo_asn` | ip | гео/ASN (ip-api) | — |
 | `email_gravatar` | email | Gravatar + пивот в домен | — |
+| `email_leaks` | email | HIBP (присутствие в утечках) | HIBP_API_KEY |
+| `phone_info` | phone | оператор/регион/тип (офлайн phonenumbers) | — ✅ |
 | `username_sweep` | username | быстрый чек ника по 12 платформам | — ✅ |
 
 ✅ = бесплатно, без ключа, работает «из коробки».

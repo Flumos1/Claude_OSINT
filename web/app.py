@@ -32,7 +32,7 @@ STATIC = Path(__file__).resolve().parent / "static"
 sys.path.insert(0, str(SCRIPTS))
 from enrich import run as enrich_run  # noqa: E402
 from enrichers.base import ENTITY_TYPES, REGISTRY  # noqa: E402
-from person_search import search_person  # noqa: E402
+from person_search import dossier_to_markdown, search_person  # noqa: E402
 
 try:
     import markdown as md
@@ -129,6 +129,15 @@ def api_person(req: PersonReq):
         raise HTTPException(400, "Пустое ФИО")
     return search_person(req.name.strip(), req.dob, req.rnokpp, req.email or None,
                          req.phone or None, req.username or None, tuple(req.countries))
+
+
+@app.post("/api/person/report")
+def api_person_report(req: PersonReq):
+    if not req.name.strip():
+        raise HTTPException(400, "Пустое ФИО")
+    d = search_person(req.name.strip(), req.dob, req.rnokpp, req.email or None,
+                      req.phone or None, req.username or None, tuple(req.countries))
+    return JSONResponse({"markdown": dossier_to_markdown(d)})
 
 
 @app.get("/api/sources/{code}")
