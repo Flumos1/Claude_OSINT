@@ -50,7 +50,7 @@ def registry_links(ident: str) -> dict[str, str]:
     }
 
 
-@enricher("ru_company_links", "company")
+@enricher("ru_company_links", "company", country="ru")
 def enrich_ru_company(value: str) -> EnricherResult:
     res = EnricherResult("ru_company_links", "company", value)
     ident = value.strip().replace(" ", "")

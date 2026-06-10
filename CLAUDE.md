@@ -1,7 +1,12 @@
 # Claude OSINT Workspace
 
 Рабочее пространство для OSINT-задач: корпоративный due diligence, threat intelligence,
-расследования/фактчекинг и обучение. Регион — смешанный (RU/СНГ + международный).
+расследования/фактчекинг и обучение.
+
+**Географический приоритет: 🇺🇦 Украина.** Россия поддерживается; другие страны
+(🇨🇿 Чехия, 🇵🇱 Польша, 🇩🇪 Германия, 🇺🇸 США…) добавляются по шаблону. Источники
+организованы страново в [knowledge/sources/](knowledge/sources/) — по умолчанию начинай с
+[ua.md](knowledge/sources/ua.md). Как добавить страну: [knowledge/sources/README.md](knowledge/sources/README.md).
 
 ## Назначение и рамки (читать первым)
 
@@ -34,7 +39,7 @@
 ```
 .claude/skills/   — Claude-скилы (плейбуки): company-dd, person-osint,
                     domain-infra, threat-intel, osint-report, osint-orchestrator
-knowledge/        — методология, каталоги источников (RU+intl), инструменты, этика, OPSEC
+knowledge/        — методология, sources/ (источники по странам: ua/ru/intl), инструменты, этика, OPSEC
 templates/        — шаблоны отчётов
 scripts/          — утилиты автоматизации (Python/PowerShell)
 cases/            — расследования; _TEMPLATE — структура нового кейса

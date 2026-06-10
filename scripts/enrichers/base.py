@@ -79,21 +79,30 @@ class EnricherResult:
         return asdict(self)
 
 
-# input_type -> list[(name, fn)]
-REGISTRY: dict[str, list[tuple[str, callable]]] = {}
+# input_type -> list[(name, fn, country)]; country=None означает страново-нейтральный
+REGISTRY: dict[str, list[tuple[str, callable, str | None]]] = {}
 
 
-def enricher(name: str, input_type: str):
-    """Декоратор регистрации энричера. fn(value:str) -> EnricherResult."""
+def enricher(name: str, input_type: str, country: str | None = None):
+    """
+    Декоратор регистрации энричера. fn(value:str) -> EnricherResult.
+    country: ISO-2 код ('ua','ru','cz'...) для страново-специфичных энричеров (реестры),
+             или None для нейтральных (domain/ip/email — работают для любой страны).
+    """
     if input_type not in ENTITY_TYPES:
         raise ValueError(f"Неизвестный тип сущности: {input_type}")
 
     def deco(fn):
-        REGISTRY.setdefault(input_type, []).append((name, fn))
+        REGISTRY.setdefault(input_type, []).append((name, fn, country))
         return fn
 
     return deco
 
 
-def enrichers_for(input_type: str) -> list[tuple[str, callable]]:
-    return REGISTRY.get(input_type, [])
+def enrichers_for(input_type: str, country: str | None = None) -> list[tuple[str, callable]]:
+    """Энричеры для типа: страново-нейтральные всегда + совпадающие по стране."""
+    out = []
+    for name, fn, c in REGISTRY.get(input_type, []):
+        if c is None or country is None or c == country:
+            out.append((name, fn))
+    return out

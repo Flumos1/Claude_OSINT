@@ -32,10 +32,15 @@ python fetch_awesome_osint.py --search username
 # Энричеры: обогащение сущности до графа (узлы/связи/факты)
 python enrich.py --list
 python enrich.py domain example.com --json ..\cases\<slug>\data\graph.json
-python enrich.py company 7707083893     # валидация ИНН/ОГРН + ссылки на реестры РФ
+python enrich.py company 14360570         # 🇺🇦 ЄДРПОУ (по умолчанию --country ua)
+python enrich.py company 7707083893 -c ru # 🇷🇺 ИНН/ОГРН
 python enrich.py ip 8.8.8.8
 python enrich.py email user@example.com
 ```
+
+Страновые энричеры (`company`) выбираются флагом `-c/--country` (по умолчанию `ua`).
+Нейтральные (`domain/ip/email`) работают для любой страны. Добавить страну —
+см. [knowledge/sources/README.md](../knowledge/sources/README.md).
 
 ## Архитектура энричеров
 

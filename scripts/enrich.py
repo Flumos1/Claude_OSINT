@@ -11,7 +11,8 @@ enrich.py — раннер энричеров. Принимает сущност
     python enrich.py domain example.com
     python enrich.py ip 8.8.8.8
     python enrich.py email someone@example.com
-    python enrich.py company 7707083893            # ИНН Сбербанка
+    python enrich.py company 14360570              # ЄДРПОУ (UA, по умолчанию --country ua)
+    python enrich.py company 7707083893 -c ru      # ИНН (Россия)
     python enrich.py domain example.com --json ..\cases\<slug>\data\graph.json
 """
 import argparse
@@ -22,13 +23,13 @@ from enrichers import ENTITY_TYPES, enrichers_for
 from enrichers.base import REGISTRY
 
 
-def run(entity_type: str, value: str) -> dict:
+def run(entity_type: str, value: str, country: str | None = None) -> dict:
     nodes: dict[str, dict] = {}
     edges: list[dict] = []
     findings: list[dict] = []
     ran: list[str] = []
 
-    for name, fn in enrichers_for(entity_type):
+    for name, fn in enrichers_for(entity_type, country):
         ran.append(name)
         res = fn(value)
         for n in res.nodes:
@@ -49,7 +50,7 @@ def run(entity_type: str, value: str) -> dict:
     # дедуп рёбер
     uniq = {(e["source"], e["target"], e["rel"]): e for e in edges}
     return {
-        "input": {"type": entity_type, "value": value},
+        "input": {"type": entity_type, "value": value, "country": country},
         "enrichers_run": ran,
         "nodes": list(nodes.values()),
         "edges": list(uniq.values()),
@@ -59,8 +60,9 @@ def run(entity_type: str, value: str) -> dict:
 
 def print_summary(graph: dict) -> None:
     inp = graph["input"]
-    print(f"\n=== {inp['type']}: {inp['value']} ===")
-    print(f"Энричеры: {', '.join(graph['enrichers_run']) or '— нет для этого типа'}")
+    ctry = f" [{inp.get('country')}]" if inp.get("country") else ""
+    print(f"\n=== {inp['type']}: {inp['value']}{ctry} ===")
+    print(f"Энричеры: {', '.join(graph['enrichers_run']) or '— нет для этого типа/страны'}")
     print(f"Узлов: {len(graph['nodes'])}  Связей: {len(graph['edges'])}  Фактов: {len(graph['findings'])}")
     print("\n[Факты]")
     for f in graph["findings"]:
@@ -79,14 +81,17 @@ def main():
     ap = argparse.ArgumentParser(description="Раннер OSINT-энричеров (граф)")
     ap.add_argument("type", nargs="?", help=f"тип сущности: {', '.join(sorted(ENTITY_TYPES))}")
     ap.add_argument("value", nargs="?", help="значение сущности")
+    ap.add_argument("-c", "--country", default="ua",
+                    help="страна для страновых энричеров (ua/ru/...); по умолчанию ua")
     ap.add_argument("--json", metavar="FILE", help="сохранить граф в JSON")
     ap.add_argument("--list", action="store_true", help="показать зарегистрированные энричеры")
     args = ap.parse_args()
 
     if args.list:
-        print("Зарегистрированные энричеры (тип → энричеры):")
+        print("Зарегистрированные энричеры (тип → энричер [страна]):")
         for t in sorted(REGISTRY):
-            print(f"  {t}: {', '.join(n for n, _ in REGISTRY[t])}")
+            items = ", ".join(f"{n}[{c or 'any'}]" for n, _, c in REGISTRY[t])
+            print(f"  {t}: {items}")
         return
 
     if not args.type or not args.value:
@@ -94,7 +99,7 @@ def main():
     if args.type not in ENTITY_TYPES:
         ap.error(f"неизвестный тип. Доступно: {', '.join(sorted(ENTITY_TYPES))}")
 
-    graph = run(args.type, args.value)
+    graph = run(args.type, args.value, args.country)
     print_summary(graph)
     if args.json:
         with open(args.json, "w", encoding="utf-8") as f:

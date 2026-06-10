@@ -6,7 +6,7 @@ description: Threat intelligence и защита бренда/инфрастру
 # Threat Intelligence
 
 Защитный OSINT: утечки, фишинг, IOC, мониторинг бренда. Источники:
-[knowledge/sources-intl.md](../../../knowledge/sources-intl.md). Подозрительное — в изоляции
+[knowledge/sources/intl.md](../../../knowledge/sources/intl.md). Подозрительное — в изоляции
 ([knowledge/opsec.md](../../../knowledge/opsec.md)).
 
 ## 0. Контекст
