@@ -17,9 +17,16 @@ Copy-Item .env.example .env   # затем заполни ключи (опцио
 | Скрипт | Назначение | API-ключ |
 |--------|-----------|----------|
 | `domain_recon.py` | RDAP + crt.sh поддомены + DNS + Wayback по домену | не нужен |
+| `fetch_awesome_osint.py` | Локальный индекс 1400+ инструментов из awesome-osint + поиск | не нужен |
 
 ```powershell
+# Разведка по домену
 python domain_recon.py example.com --json ..\cases\<slug>\data\example.com.json
+
+# Обновить локальный каталог инструментов (→ knowledge/tools-index.md + .json)
+python fetch_awesome_osint.py
+# Поиск инструмента по локальному индексу
+python fetch_awesome_osint.py --search username
 ```
 
 ## Что добавить дальше (бэклог)

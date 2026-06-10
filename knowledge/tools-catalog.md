@@ -3,6 +3,14 @@
 > Установка по необходимости. Многие — CLI на Python. Часть требует API-ключей.
 > Перед использованием — проверь легальность и ToS целевого ресурса.
 
+> 📚 **Полный индекс 1400+ инструментов:** [tools-index.md](tools-index.md) — автогенерация
+> из [`jivoi/awesome-osint`](https://github.com/jivoi/awesome-osint) скриптом
+> `scripts/fetch_awesome_osint.py` (обновляется по запросу). Поиск по индексу:
+> `python scripts/fetch_awesome_osint.py --search <term>`.
+> Витрина того же источника онлайн: [OSINT Brasil / osint-explorer](https://github.com/azurejoga/osint-explorer).
+> ⚠️ Индекс импортирован «как есть» — фильтруй через [ethics-legal.md](ethics-legal.md).
+> Ниже — отобранный нами короткий список рабочих лошадок.
+
 ## Фреймворки и наборы
 
 | Инструмент | Назначение | Заметка |
