@@ -61,6 +61,24 @@ Apache-2.0. Этический фреймворк совпадает с наши
 7. Данные хранятся локально — подходит для чувствительных кейсов.
 8. **Проверить перед доверием:** свежесть коммитов, issues, что секреты не в репо, обновления.
 
+## Каталог энричеров flowsint (референс для нашего бэклога)
+
+Из `flowsint-enrichers/` (имена = пивоты «X → Y»):
+
+- **domain →** asn, ip, root_domain, subdomains, ssl, history, whois, whois_history, website, dehashed, dummy_individuals
+- **ip →** asn, domain, ports, infos, fraudscore, dehashed
+- **email →** domain(s), username, gravatar, leaks, hudsonrock, dehashed
+- **phone →** carrier, infos, hudsonrock
+- **social →** maigret, sherlock, hudsonrock, dehashed
+- **organization →** asn, domains, infos · **individual →** domains, org
+- **asn →** cidrs · **cidr →** ips · **crypto →** transactions, nfts
+- **website →** crawler, links, subdomain, text, webtrackers · **n8n** коннектор
+
+> У нас уже есть: domain (whois/subdomains/ip/wayback), ip (geo/asn), email (gravatar+domain).
+> Приоритет добрать (см. scripts/README бэклог): ssl, whois_history, ip.ports (Shodan),
+> username (maigret/sherlock), phone.carrier, email.leaks, crypto. `hudsonrock` (infostealer-логи)
+> и `dehashed` — мощно, но dehashed платный и требует строгой этики (только свои/авторизованные).
+
 ### Как впишем в наш процесс (А)
 
 - Сложный кейс (много сущностей) ведём граф во flowsint; экспорт находок → наш `cases/<slug>/`

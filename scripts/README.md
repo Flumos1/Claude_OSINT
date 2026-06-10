@@ -50,14 +50,24 @@ python enrich.py email user@example.com
 Добавить энричер: файл в `enrichers/`, функция `fn(value)->EnricherResult` с
 `@enricher("имя","тип")`, импорт в `enrichers/__init__.py`.
 
-## Что добавить дальше (бэклог)
+## Бэклог энричеров (по образцу каталога flowsint)
 
-- `breach_check.py` — HIBP по email/домену (свои/авторизованные данные).
-- `ioc_lookup.py` — VirusTotal/AbuseIPDB/GreyNoise по IP/домену/хешу.
-- `username_sweep.py` — обёртка над whatsmyname/Sherlock-списком.
-- `sanctions_check.py` — поиск по OpenSanctions API.
-- `typosquat_gen.py` — генерация и проверка доменов-двойников (dnstwist-логика).
-- `archive_page.py` — Playwright: скриншот + PDF + Wayback Save для доказательств.
+🇺🇦 **Украина (приоритет):**
+- `opendatabot` — расширить: CourtService (судові рішення), PenaltyService (ЄРБ/виконавчі),
+  RealEstateService (по ключу ODB_API_KEY).
+- `youcontrol` — YouScore API (бенефіціари, зв'язки, скоринг) по ключу.
+- `nazk_declarations` — открытое API НАЗК (декларації посадовців, без ключа).
+- `prozorro` — открытое API закупок по ЄДРПОУ.
+
+**Нейтральные (любая страна), приоритет по flowsint-энричерам, которых у нас нет:**
+- `domain.to_ssl`, `domain.to_whois_history` — сертификаты, история whois.
+- `ip.to_ports` — Shodan/Censys (открытые порты).
+- `username.to_maigret / to_sherlock` — ник по платформам.
+- `phone.to_carrier / to_infos` — оператор/регион телефона.
+- `email.to_leaks` (HIBP, свои/авторизованные), `email.to_username`.
+- `crypto.to_transactions / to_nfts` — блокчейн.
+- `ioc` — VirusTotal/AbuseIPDB/GreyNoise; `typosquat` — dnstwist; `archive_page` — Playwright/Wayback.
 
 > Принцип: пассивные источники по умолчанию; ключи и .env — вне репозитория;
-> результаты складывай в `cases/<slug>/data/`.
+> результаты складывай в `cases/<slug>/data/`. Полный список flowsint-энричеров как
+> референс — [flowsint-integration.md](../knowledge/flowsint-integration.md).
