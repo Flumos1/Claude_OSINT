@@ -11,8 +11,12 @@ scripts/.env
 
 # Python
 scripts/.venv/
+web/.venv/
 __pycache__/
 *.pyc
+
+# Web server runtime
+web/server.log
 
 # OS
 Thumbs.db

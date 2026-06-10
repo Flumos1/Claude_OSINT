@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude OSINT — Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script defer src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">OS</div>
+        <div class="brand-text">
+          <strong>Claude OSINT</strong>
+          <span>Workspace</span>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+        <a class="nav-item active" data-view="dashboard"><span class="ic">◧</span> Обзор</a>
+        <a class="nav-item" data-view="enrich"><span class="ic">⊹</span> Обогащение</a>
+        <a class="nav-item" data-view="sources"><span class="ic">▤</span> Источники</a>
+        <a class="nav-item" data-view="skills"><span class="ic">◇</span> Скилы</a>
+        <a class="nav-item" data-view="cases"><span class="ic">▥</span> Кейсы</a>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="legal">Только открытые источники. Этичный OSINT.</div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main">
+      <header class="topbar">
+        <form class="globalsearch" id="globalsearch" autocomplete="off">
+          <select id="g-type" class="field" title="Тип сущности"></select>
+          <select id="g-country" class="field" title="Страна"></select>
+          <input id="g-value" class="field grow" type="text" placeholder="Значение: ЄДРПОУ, домен, email, ПІБ, IP, ник…">
+          <button class="btn primary" type="submit">Обогатить</button>
+        </form>
+        <button class="iconbtn" id="theme-toggle" title="Тема">◐</button>
+      </header>
+
+      <main class="content" id="content"><!-- views injected --></main>
+    </div>
+  </div>
+
+  <!-- View templates -->
+  <template id="tpl-dashboard">
+    <section class="view">
+      <div class="view-head">
+        <h1>Обзор</h1>
+        <p class="muted">Единое пространство OSINT: движок обогащения, источники по странам, плейбуки, кейсы.</p>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><h2>Быстрый старт</h2></div>
+          <div class="panel-body quickstart">
+            <button class="chip" data-quick="company|ua|14360570">🇺🇦 Компания (ЄДРПОУ)</button>
+            <button class="chip" data-quick="domain||example.com">Домен</button>
+            <button class="chip" data-quick="person|ua|Зеленський Володимир Олександрович">🇺🇦 Персона (ПІБ)</button>
+            <button class="chip" data-quick="email||test@example.com">Email</button>
+            <button class="chip" data-quick="ip||8.8.8.8">IP</button>
+            <button class="chip" data-quick="username||torvalds">Username</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Энричеры</h2></div>
+          <div class="panel-body" id="enricher-map"></div>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-enrich">
+    <section class="view">
+      <div class="view-head"><h1>Обогащение</h1>
+        <p class="muted">Сущность → граф связей. Факты с provenance и оценкой достоверности.</p></div>
+      <div class="enrich-layout">
+        <div class="panel result-panel">
+          <div class="panel-head">
+            <h2 id="result-title">Результат</h2>
+            <div class="tabs" id="result-tabs">
+              <button class="tab active" data-tab="findings">Факты</button>
+              <button class="tab" data-tab="graph">Граф</button>
+              <button class="tab" data-tab="nodes">Сущности</button>
+              <button class="tab" data-tab="json">JSON</button>
+            </div>
+          </div>
+          <div class="panel-body" id="result-body">
+            <div class="empty" id="result-empty">
+              <div class="empty-mark">⊹</div>
+              <p>Введите сущность в строке поиска сверху и нажмите «Обогатить».</p>
+            </div>
+            <div class="tabpane" data-pane="findings" hidden></div>
+            <div class="tabpane" data-pane="graph" hidden><div id="graph"></div></div>
+            <div class="tabpane" data-pane="nodes" hidden></div>
+            <div class="tabpane" data-pane="json" hidden><pre id="json-out" class="code"></pre></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-sources">
+    <section class="view">
+      <div class="view-head"><h1>Источники</h1>
+        <p class="muted">Открытые реестры по странам. Приоритет — Украина.</p></div>
+      <div class="tabs" id="source-tabs"></div>
+      <div class="panel"><div class="panel-body md" id="source-content"></div></div>
+    </section>
+  </template>
+
+  <template id="tpl-skills">
+    <section class="view">
+      <div class="view-head"><h1>Скилы (плейбуки)</h1>
+        <p class="muted">Пошаговые методики. В Claude Code вызываются автоматически по задаче.</p></div>
+      <div class="cards" id="skills-list"></div>
+    </section>
+  </template>
+
+  <template id="tpl-cases">
+    <section class="view">
+      <div class="view-head"><h1>Кейсы</h1>
+        <p class="muted">Расследования. Структура — из <code>cases/_TEMPLATE</code>.</p></div>
+      <div class="cards" id="cases-list"></div>
+    </section>
+  </template>
+
+  <script defer src="/static/app.js"></script>
+</body>
+</html>

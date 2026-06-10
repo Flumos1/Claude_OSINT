@@ -41,7 +41,8 @@
                     domain-infra, threat-intel, osint-report, osint-orchestrator
 knowledge/        — методология, sources/ (источники по странам: ua/ru/intl), инструменты, этика, OPSEC
 templates/        — шаблоны отчётов
-scripts/          — утилиты автоматизации (Python/PowerShell)
+scripts/          — утилиты автоматизации + движок энричеров (Python)
+web/              — веб-платформа (FastAPI): дашборд, обогащение с графом, источники, скилы, кейсы
 cases/            — расследования; _TEMPLATE — структура нового кейса
 data/             — сырые выгрузки (gitignore-кандидат, может содержать чувствительное)
 ```
