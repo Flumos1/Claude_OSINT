@@ -1,0 +1,19 @@
+# Чувствительные данные расследований — не коммитить
+data/
+cases/*/data/
+cases/*/screenshots/
+!cases/_TEMPLATE/
+!**/.gitkeep
+
+# Секреты
+scripts/.env
+*.key
+
+# Python
+scripts/.venv/
+__pycache__/
+*.pyc
+
+# OS
+Thumbs.db
+.DS_Store
