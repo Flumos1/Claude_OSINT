@@ -38,6 +38,7 @@
 
 | Инструмент | Назначение |
 |-----------|-----------|
+| web-check (lissy93) | All-in-one website OSINT: ~30 проверок (DNS/SSL/headers/tech/cookies) | MIT, self-host; радар 2026-06 |
 | amass | Перечисление поддоменов (OWASP), активное+пассивное |
 | subfinder | Быстрый пассивный subdomain enum |
 | dnsx / dnsrecon | DNS-резолв, типы записей, зоны |
@@ -51,6 +52,7 @@
 |-----------|-----------|
 | Sherlock | Username по сотням сайтов |
 | Maigret | Расширенный аналог Sherlock + извлечение данных |
+| user-scanner (kaifcodec) | Email+Username, 205+ векторов (MIT; радар 2026-06) |
 | Holehe | Проверка, где зарегистрирован email (по «забыли пароль») |
 | PhoneInfoga | Разведка по телефону |
 | GHunt | Разведка по Google-аккаунту/Gmail |
