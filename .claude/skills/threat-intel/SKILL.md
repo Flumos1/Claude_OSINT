@@ -48,6 +48,8 @@ description: Threat intelligence и защита бренда/инфрастру
 - Поддомены/забытые сервисы → **domain-infra** (crt.sh, subfinder).
 - Открытые сервисы → Shodan/Censys по своим IP/ASN.
 - Утёкшие секреты в публичном коде: GitHub dorks, gitleaks/trufflehog по своим репозиториям/упоминаниям.
+  Скрипты: `python scripts/secrets_scan.py <url|файл>` (24 secret-regex) или энричер `url` →
+  `python scripts/enrich.py url <url>`; дорки по своему домену: `python scripts/dorks.py domain <d>`.
 - Публичные документы с метаданными (внутр. имена, ПО) — Google `filetype:` по своему домену.
 
 ## 5. Даркнет / пасты / форумы

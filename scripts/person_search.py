@@ -27,6 +27,7 @@ import os
 
 from translit import name_variants
 from sanctions import check_opensanctions
+from dorks import person_dorks
 from enrichers.ua_person_enr import valid_rnokpp
 from enrichers.ru_company_enr import valid_inn
 from enrichers.nazk_enr import enrich_nazk
@@ -175,6 +176,10 @@ def search_person(name, dob=None, rnokpp=None, email=None, phone=None, username=
         selectors["phone"] = [f.text for f in pr.findings]
         for f in pr.findings:
             fact(f"[phone] {f.text}", f.source, f.confidence)
+
+    # Дорки для ручного поиска (резюме/соцсети/контакты/пасты)
+    for dk in person_dorks(name):
+        fact(f"Дорк [{dk['label']}]: {dk['url']}", "dorks")
 
     # Санкции/PEP — живой поиск (по ключу OpenSanctions), иначе deep-ссылка (в registries.intl)
     sanc_hits = None

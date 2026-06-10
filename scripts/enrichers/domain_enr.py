@@ -4,6 +4,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import domain_recon as dr  # noqa: E402
+from dorks import domain_dorks  # noqa: E402
 
 from .base import EnricherResult, enricher  # noqa: E402
 
@@ -44,5 +45,9 @@ def enrich_domain(value: str) -> EnricherResult:
     if isinstance(wb, dict) and wb.get("url"):
         root.attrs["wayback"] = wb.get("url")
         res.fact(f"Архив Wayback: {wb.get('timestamp')}", "web.archive.org")
+
+    # дорки для ручного поиска утечек (полный набор — python dorks.py domain <d>)
+    for d in domain_dorks(value)[:4]:
+        res.fact(f"Дорк [{d['label']}]: {d['url']}", "dorks")
 
     return res

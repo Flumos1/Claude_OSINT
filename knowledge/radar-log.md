@@ -31,6 +31,11 @@
 | `deepcloak` | Обход Cloudflare/DataDome/reCAPTCHA — нарушение ToS/анти-бот. |
 | GhostTrack, Void-Tools, location/phone-трекеры | «Пробив»/слежка/трекинг локации — красные линии. |
 
-### Решение
-Завести в каталог: web-check, user-scanner. Кандидат на изучение в первую очередь —
-**web-check** (идеи проверок домена для энричеров) и **elementalsouls/Claude-OSINT** (дорки/регексы).
+### Решение — ВНЕДРЕНО (2026-06-10)
+Ценность находок перенесена к нам (не ссылки, а рабочий код):
+- **web-check** → энричер `website` (SSL/security-заголовки/сервер/robots/security.txt, оценка A–F).
+- **elementalsouls/Claude-OSINT** (дорки/регексы) → `dorks.py` (Google/Bing/Yandex дорки для
+  домена и персоны, интегрированы в `domain`/person_search) + `secrets_scan.py` (24 secret-regex,
+  скан URL/файла) + энричер `secrets_scan` (тип url).
+- **user-scanner** → расширен список платформ `username_sweep` (12→21).
+web-check и user-scanner также в tools-catalog как внешние инструменты.

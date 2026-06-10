@@ -27,6 +27,15 @@ PLATFORMS = [
     ("HackerNews", "https://news.ycombinator.com/user?id={u}", "No such user."),
     ("Steam", "https://steamcommunity.com/id/{u}", "The specified profile could not be found"),
     ("Telegram", "https://t.me/{u}", "tgme_page_title"),  # маркер ПРИСУТНОСТИ (инверсия ниже)
+    ("Bitbucket", "https://bitbucket.org/{u}/", None),
+    ("NPM", "https://www.npmjs.com/~{u}", None),
+    ("PyPI", "https://pypi.org/user/{u}/", None),
+    ("Codepen", "https://codepen.io/{u}", None),
+    ("Last.fm", "https://www.last.fm/user/{u}", None),
+    ("Medium", "https://medium.com/@{u}", None),
+    ("SoundCloud", "https://soundcloud.com/{u}", None),
+    ("Kaggle", "https://www.kaggle.com/{u}", None),
+    ("Telegraph", "https://telegra.ph/{u}", None),
 ]
 
 

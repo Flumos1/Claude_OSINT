@@ -20,6 +20,8 @@ Copy-Item .env.example .env   # затем заполни ключи (опцио
 | `fetch_awesome_osint.py` | Локальный индекс 1400+ инструментов из awesome-osint + поиск | не нужен |
 | `enrich.py` + `enrichers/` | Раннер энричеров (по мотивам flowsint): сущность → граф | не нужен |
 | `person_search.py` + `translit.py` | Интеллектуальный поиск ФЛ: варианты имени, реестры UA/RU/межд., живой НАЗК | не нужен |
+| `dorks.py` | Генератор Google/Bing/Yandex дорков для домена и персоны | не нужен |
+| `secrets_scan.py` | Каталог secret-regex (24) + скан URL/файла на утёкшие секреты | не нужен |
 
 ```powershell
 # Разведка по домену
@@ -61,7 +63,9 @@ python enrich.py email user@example.com
 | `ua_person_links` | person [ua] | валидация РНОКПП + ссылки (ЄРБ/АСВП/reyestr…) | — |
 | `nazk_declarations` | person [ua] | **НАЗК API** (декларації посадовців) | — ✅ |
 | `ru_company_links` | company [ru] | валидация ИНН/ОГРН + ссылки на реестры РФ | — |
-| `domain_recon` | domain | RDAP/crt.sh/DNS/Wayback | — |
+| `domain_recon` | domain | RDAP/crt.sh/DNS/Wayback + дорки | — |
+| `website` | domain | SSL-сертификат, security-заголовки, сервер, robots/security.txt (web-check-стиль) | — ✅ |
+| `secrets_scan` | url | скан страницы на утёкшие секреты (24 паттерна) | — ✅ |
 | `ip_geo_asn` | ip | гео/ASN (ip-api) | — |
 | `email_gravatar` | email | Gravatar + пивот в домен | — |
 | `email_leaks` | email | HIBP (присутствие в утечках) | HIBP_API_KEY |
