@@ -32,6 +32,7 @@ STATIC = Path(__file__).resolve().parent / "static"
 sys.path.insert(0, str(SCRIPTS))
 from enrich import run as enrich_run  # noqa: E402
 from enrichers.base import ENTITY_TYPES, REGISTRY  # noqa: E402
+from person_search import search_person  # noqa: E402
 
 try:
     import markdown as md
@@ -110,6 +111,24 @@ def api_enrich(req: EnrichReq):
     if not req.value.strip():
         raise HTTPException(400, "Пустое значение")
     return enrich_run(req.type, req.value.strip(), req.country)
+
+
+class PersonReq(BaseModel):
+    name: str
+    dob: str | None = None
+    rnokpp: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    username: str | None = None
+    countries: list[str] = ["ua", "ru", "intl"]
+
+
+@app.post("/api/person")
+def api_person(req: PersonReq):
+    if not req.name.strip():
+        raise HTTPException(400, "Пустое ФИО")
+    return search_person(req.name.strip(), req.dob, req.rnokpp, req.email or None,
+                         req.phone or None, req.username or None, tuple(req.countries))
 
 
 @app.get("/api/sources/{code}")

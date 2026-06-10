@@ -24,6 +24,7 @@
       <nav class="nav" id="nav">
         <a class="nav-item active" data-view="dashboard"><span class="ic">◧</span> Обзор</a>
         <a class="nav-item" data-view="enrich"><span class="ic">⊹</span> Обогащение</a>
+        <a class="nav-item" data-view="person"><span class="ic">⚇</span> Поиск ФЛ</a>
         <a class="nav-item" data-view="sources"><span class="ic">▤</span> Источники</a>
         <a class="nav-item" data-view="skills"><span class="ic">◇</span> Скилы</a>
         <a class="nav-item" data-view="cases"><span class="ic">▥</span> Кейсы</a>
@@ -104,6 +105,32 @@
           </div>
         </div>
       </div>
+    </section>
+  </template>
+
+  <template id="tpl-person">
+    <section class="view">
+      <div class="view-head"><h1>Поиск физлица</h1>
+        <p class="muted">Интеллектуальный поиск по открытым источникам: варианты имени, реестры UA/RU/межд., пивот селекторов.</p></div>
+      <div class="basis-bar" id="basis-bar"></div>
+      <form class="person-form panel" id="person-form">
+        <div class="panel-body pform-grid">
+          <label>ФИО / ПІБ <span class="req">*</span><input id="p-name" class="field" placeholder="Прізвище Ім'я По-батькові" required></label>
+          <label>Дата рождения<input id="p-dob" class="field" type="date"></label>
+          <label>РНОКПП / ИНН<input id="p-rnokpp" class="field" placeholder="10 (UA) / 12 (RU) цифр"></label>
+          <label>Email (если есть)<input id="p-email" class="field" placeholder="name@example.com"></label>
+          <label>Телефон (если есть)<input id="p-phone" class="field" placeholder="+380…"></label>
+          <label>Username (если есть)<input id="p-username" class="field" placeholder="ник"></label>
+          <div class="pform-countries">
+            <span class="muted">Страны:</span>
+            <label class="cb"><input type="checkbox" value="ua" checked> 🇺🇦 UA</label>
+            <label class="cb"><input type="checkbox" value="ru" checked> 🇷🇺 RU</label>
+            <label class="cb"><input type="checkbox" value="intl" checked> 🌍 межд.</label>
+          </div>
+          <button class="btn primary" type="submit">Искать</button>
+        </div>
+      </form>
+      <div id="person-result"></div>
     </section>
   </template>
 

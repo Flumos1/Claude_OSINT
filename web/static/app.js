@@ -13,6 +13,7 @@ const state = { meta: null, lastGraph: null, network: null };
 const api = {
   meta: () => fetch("/api/meta").then(r => r.json()),
   enrich: (body) => fetch("/api/enrich", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(async r => { if (!r.ok) throw new Error((await r.json()).detail || r.statusText); return r.json(); }),
+  person: (body) => fetch("/api/person", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(async r => { if (!r.ok) throw new Error((await r.json()).detail || r.statusText); return r.json(); }),
   source: (code) => fetch(`/api/sources/${code}`).then(r => r.json()),
   skills: () => fetch("/api/skills").then(r => r.json()),
   cases: () => fetch("/api/cases").then(r => r.json()),
@@ -138,6 +139,51 @@ function drawGraph(g) {
     physics: { stabilization: true, barnesHut: { springLength: 130, gravitationalConstant: -6000 } },
     interaction: { hover: true }, nodes: { shapeProperties: { borderRadius: 6 } },
   });
+}
+
+/* ---------- Person search ---------- */
+views.person = () => {
+  $("#person-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const body = {
+      name: $("#p-name").value.trim(),
+      dob: $("#p-dob").value || null,
+      rnokpp: $("#p-rnokpp").value.trim() || null,
+      email: $("#p-email").value.trim() || null,
+      phone: $("#p-phone").value.trim() || null,
+      username: $("#p-username").value.trim() || null,
+      countries: $$(".pform-countries .cb input:checked").map(c => c.value),
+    };
+    if (!body.name) return;
+    const out = $("#person-result");
+    out.innerHTML = `<div class="panel"><div class="panel-body loading"><span class="spin">◴</span> Поиск по реестрам…</div></div>`;
+    try { renderDossier(await api.person(body)); }
+    catch (err) { out.innerHTML = `<div class="panel"><div class="panel-body"><span class="f-tag ERROR">ERROR</span> ${esc(err.message)}</div></div>`; }
+  });
+};
+
+function renderDossier(d) {
+  $("#basis-bar").textContent = d.basis;
+  const out = $("#person-result");
+  const findings = d.findings.map(f => `
+    <div class="finding"><span class="f-tag ${esc(f.label)}">${esc(f.label)}</span>
+      <div class="f-main"><div class="f-text">${linkify(f.text)}</div>
+        <div class="f-meta">${esc(f.source)}${f.confidence ? ` · <span class="f-conf">${esc(f.confidence)}</span>` : ""}</div></div></div>`).join("");
+  const regs = Object.entries(d.registries).map(([c, items]) => `
+    <div class="reg-group"><h3>${c === "ua" ? "🇺🇦 Украина" : c === "ru" ? "🇷🇺 Россия" : "🌍 Международные"}</h3>
+      ${items.map(r => `<div class="reg-item"><span class="reg-name"><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a></span><span class="reg-note">${esc(r.note)}</span></div>`).join("")}</div>`).join("");
+  out.innerHTML = `
+    <div class="panel dossier-section"><div class="panel-head"><h2>Варианты написания (recall)</h2></div>
+      <div class="panel-body variants">${d.name_variants.map(v => `<span class="badge">${esc(v)}</span>`).join("")}</div></div>
+    <div class="panel dossier-section"><div class="panel-head"><h2>Находки (живые источники)</h2></div>
+      <div class="panel-body">${findings || '<span class="muted">Прямых находок нет — используй ссылки на реестры ниже.</span>'}</div></div>
+    <div class="panel dossier-section"><div class="panel-head"><h2>Граф связей</h2></div>
+      <div class="panel-body"><div id="graph"></div></div></div>
+    <div class="panel dossier-section"><div class="panel-head"><h2>Реестры (точки входа)</h2></div>
+      <div class="panel-body">${regs}</div></div>
+    <div class="panel dossier-section"><div class="panel-head"><h2>Правовые ограничения</h2></div>
+      <div class="panel-body"><ul class="notes-list">${d.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul></div></div>`;
+  drawGraph(d);
 }
 
 /* ---------- Sources ---------- */

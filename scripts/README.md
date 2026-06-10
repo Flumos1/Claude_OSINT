@@ -19,6 +19,7 @@ Copy-Item .env.example .env   # затем заполни ключи (опцио
 | `domain_recon.py` | RDAP + crt.sh поддомены + DNS + Wayback по домену | не нужен |
 | `fetch_awesome_osint.py` | Локальный индекс 1400+ инструментов из awesome-osint + поиск | не нужен |
 | `enrich.py` + `enrichers/` | Раннер энричеров (по мотивам flowsint): сущность → граф | не нужен |
+| `person_search.py` + `translit.py` | Интеллектуальный поиск ФЛ: варианты имени, реестры UA/RU/межд., живой НАЗК | не нужен |
 
 ```powershell
 # Разведка по домену
