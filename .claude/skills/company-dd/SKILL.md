@@ -19,7 +19,9 @@ description: Корпоративный due diligence и проверка кон
 
 ## 🇺🇦 Быстрый маршрут по Украине (приоритет)
 
-Детали и ссылки — [sources/ua.md](../../../knowledge/sources/ua.md). Порядок:
+Детали и ссылки — [sources/ua.md](../../../knowledge/sources/ua.md). Быстрый граф-старт:
+`python scripts/enrich.py company <ЄДРПОУ>` — соберёт deep-ссылки на все реестры + (по
+ключам) живые данные Opendatabot (карточка + суди/штрафи/нерухомість) и YouControl. Порядок:
 
 1. **Реестр:** ЄДР (usr.minjust.gov.ua) + Opendatabot/YouControl/Clarity — регистрация,
    директор, **кінцеві бенефіціари (раскрыты в ЄДР — плюс UA)**, адрес, КВЕД.

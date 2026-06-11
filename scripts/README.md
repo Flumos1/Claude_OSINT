@@ -63,7 +63,8 @@ python enrich.py email user@example.com
 |---------|--------------|----------|------|
 | `ua_company_links` | company [ua] | валидация ЄДРПОУ + ссылки на реестры | — |
 | `prozorro` | company [ua] | **ProZorro API** (тендеры по коду) | — ✅ |
-| `opendatabot` | company [ua] | Opendatabot API (карточка компании) | ODB_API_KEY |
+| `opendatabot` | company [ua] | Opendatabot API: карточка + доп. сервіси (суди/штрафи/нерухомість) | ODB_API_KEY |
+| `youcontrol` | company [ua] | YouControl/YouScore (карточка, бенефіціари); без ключа — deep-ссылка | YOUCONTROL_API_KEY |
 | `ua_person_links` | person [ua] | валидация РНОКПП + ссылки (ЄРБ/АСВП/reyestr…) | — |
 | `nazk_declarations` | person [ua] | **НАЗК API** (декларації посадовців) | — ✅ |
 | `ru_company_links` | company [ru] | валидация ИНН/ОГРН + ссылки на реестры РФ | — |
@@ -75,18 +76,20 @@ python enrich.py email user@example.com
 | `email_gravatar` | email | Gravatar + пивот в домен | — |
 | `email_leaks` | email | HIBP (присутствие в утечках) | HIBP_API_KEY |
 | `phone_info` | phone | оператор/регион/тип (офлайн phonenumbers) | — ✅ |
-| `username_sweep` | username | быстрый чек ника по 12 платформам | — ✅ |
+| `username_sweep` | username | чек ника по ~48 платформам (категории) + опц. датасет WhatsMyName | — ✅ |
 
 ✅ = бесплатно, без ключа, работает «из коробки».
 
+> **username_sweep, глубокий режим:** положи датасет [WhatsMyName](https://github.com/WebBreacher/WhatsMyName)
+> в `scripts/data/wmn-data.json` — энричер автоматически прогонит сотни сайтов поверх
+> курируемого списка (maigret-уровень, keyless). Без файла — работает на курируемых ~48.
+> Файл не коммитим (см. `.gitignore`).
+
 ## Бэклог энричеров (по образцу каталога flowsint)
 
-🇺🇦 **Украина:** `opendatabot` расширить (CourtService/PenaltyService/RealEstateService по ключу);
-`youcontrol` (YouScore API, по ключу).
 **Нейтральные (которых нет, приоритет по flowsint):** `domain.ssl/whois_history`,
-`ip.ports` (Shodan), `username.maigret` (глубже sweep), `phone.carrier`,
-`email.leaks` (HIBP, свои/авторизованные), `crypto`, `ioc` (VT/AbuseIPDB/GreyNoise),
-`archive_page` (Playwright/Wayback).
+`ip.ports` (Shodan InternetDB — keyless), `phone.carrier`, `crypto`,
+`ioc` (VT/AbuseIPDB/GreyNoise), `archive_page` (Wayback CDX).
 
 > Принцип: пассивные источники по умолчанию; ключи и .env — вне репозитория;
 > результаты складывай в `cases/<slug>/data/`. Полный список flowsint-энричеров как
