@@ -9,6 +9,7 @@ from . import (  # noqa: F401
     phone_enr,
     prozorro_enr,
     ru_company_enr,
+    typosquat_enr,
     ua_company_enr,
     ua_person_enr,
     url_secrets_enr,

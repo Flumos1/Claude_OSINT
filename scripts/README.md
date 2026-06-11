@@ -22,6 +22,7 @@ Copy-Item .env.example .env   # затем заполни ключи (опцио
 | `person_search.py` + `translit.py` | Интеллектуальный поиск ФЛ: варианты имени, реестры UA/RU/межд., живой НАЗК | не нужен |
 | `dorks.py` | Генератор Google/Bing/Yandex дорков для домена и персоны | не нужен |
 | `secrets_scan.py` | Каталог secret-regex (24) + скан URL/файла на утёкшие секреты | не нужен |
+| `typosquat.py` | Генератор типо-вариантов домена (dnstwist-стиль) + IDN-омоглифы + DNS-проверка | не нужен |
 
 ```powershell
 # Разведка по домену
@@ -31,6 +32,9 @@ python domain_recon.py example.com --json ..\cases\<slug>\data\example.com.json
 python fetch_awesome_osint.py
 # Поиск инструмента по локальному индексу
 python fetch_awesome_osint.py --search username
+
+# Типосквоттинг/брендозащита: похожие домены + кто из них уже зарегистрирован
+python typosquat.py example.com --resolve --json ..\cases\<slug>\data\typosquat.json
 
 # Энричеры: обогащение сущности до графа (узлы/связи/факты)
 python enrich.py --list
@@ -65,6 +69,7 @@ python enrich.py email user@example.com
 | `ru_company_links` | company [ru] | валидация ИНН/ОГРН + ссылки на реестры РФ | — |
 | `domain_recon` | domain | RDAP/crt.sh/DNS/Wayback + дорки | — |
 | `website` | domain | SSL-сертификат, security-заголовки, сервер, robots/security.txt (web-check-стиль) | — ✅ |
+| `typosquat` | domain | типо-варианты домена + IDN-омоглифы, DNS-проверка живых (dnstwist-стиль) | — ✅ |
 | `secrets_scan` | url | скан страницы на утёкшие секреты (24 паттерна) | — ✅ |
 | `ip_geo_asn` | ip | гео/ASN (ip-api) | — |
 | `email_gravatar` | email | Gravatar + пивот в домен | — |
@@ -81,7 +86,7 @@ python enrich.py email user@example.com
 **Нейтральные (которых нет, приоритет по flowsint):** `domain.ssl/whois_history`,
 `ip.ports` (Shodan), `username.maigret` (глубже sweep), `phone.carrier`,
 `email.leaks` (HIBP, свои/авторизованные), `crypto`, `ioc` (VT/AbuseIPDB/GreyNoise),
-`typosquat` (dnstwist), `archive_page` (Playwright/Wayback).
+`archive_page` (Playwright/Wayback).
 
 > Принцип: пассивные источники по умолчанию; ключи и .env — вне репозитория;
 > результаты складывай в `cases/<slug>/data/`. Полный список flowsint-энричеров как
