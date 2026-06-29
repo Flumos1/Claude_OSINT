@@ -21,6 +21,10 @@ __pycache__/
 # Web server runtime
 web/server.log
 
+# Сборка фронтенда (генерируется npm run build в web/ui)
+web/static/dist/
+web/ui/node_modules/
+
 # OS
 Thumbs.db
 .DS_Store

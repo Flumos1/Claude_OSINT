@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -177,10 +177,24 @@ def api_cases():
 
 @app.get("/")
 def index():
+    # Новый UI (React/Vite) если собран, иначе — текущая SPA
+    dist_index = STATIC / "dist" / "index.html"
+    if dist_index.exists():
+        return RedirectResponse("/app/")
+    return FileResponse(STATIC / "index.html")
+
+
+@app.get("/legacy")
+def legacy():
     return FileResponse(STATIC / "index.html")
 
 
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
+
+# Новый фронтенд (React/Vite) — собирается в static/dist (npm run build в web/ui)
+_DIST = STATIC / "dist"
+if _DIST.exists():
+    app.mount("/app", StaticFiles(directory=str(_DIST), html=True), name="app")
 
 
 if __name__ == "__main__":
