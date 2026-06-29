@@ -22,6 +22,7 @@ Copy-Item .env.example .env   # затем заполни ключи (опцио
 | `person_search.py` + `translit.py` | Интеллектуальный поиск ФЛ: варианты имени, реестры UA/RU/межд., живой НАЗК | не нужен |
 | `dorks.py` | Генератор Google/Bing/Yandex дорков для домена и персоны | не нужен |
 | `secrets_scan.py` | Каталог secret-regex (24) + скан URL/файла на утёкшие секреты | не нужен |
+| `fetch_wmn.py` | Датасет WhatsMyName (700+ сайтов) для deep-режима username | не нужен |
 
 ```powershell
 # Разведка по домену
@@ -39,7 +40,19 @@ python enrich.py company 14360570         # 🇺🇦 ЄДРПОУ (по умол
 python enrich.py company 7707083893 -c ru # 🇷🇺 ИНН/ОГРН
 python enrich.py ip 8.8.8.8
 python enrich.py email user@example.com
+
+# Username: быстрый чек (21 платформа) со скорингом уверенности 0–100%
+python enrich.py username johndoe
+# Глубокий чек (700+ сайтов WhatsMyName, параллельно) — сначала скачать датасет
+python fetch_wmn.py
+$env:USERNAME_DEEP=1; python enrich.py username johndoe   # PowerShell
+# Тюнинг deep: USERNAME_DEEP_MAX (лимит сайтов), USERNAME_DEEP_WORKERS, USERNAME_DEEP_TIMEOUT
 ```
+
+> **Скоринг username:** каждое попадание получает уверенность 0–100% и Admiralty-оценку
+> (D3 ≥78% / D4 55–77% / D5 <55%). Буква `D` — источник-скрейпер ненадёжен по природе;
+> цифра двигается по силе детекта. Режет soft-404 (HTTP 200 на любой ник, редиректы
+> на login/главную) — фокусируй ручную проверку на хитах низкой уверенности.
 
 Страновые энричеры (`company`) выбираются флагом `-c/--country` (по умолчанию `ua`).
 Нейтральные (`domain/ip/email`) работают для любой страны. Добавить страну —
@@ -70,7 +83,7 @@ python enrich.py email user@example.com
 | `email_gravatar` | email | Gravatar + пивот в домен | — |
 | `email_leaks` | email | HIBP (присутствие в утечках) | HIBP_API_KEY |
 | `phone_info` | phone | оператор/регион/тип (офлайн phonenumbers) | — ✅ |
-| `username_sweep` | username | быстрый чек ника по 12 платформам | — ✅ |
+| `username_sweep` | username | чек ника со скорингом 0–100%; быстрый (21 платф.) / deep (WhatsMyName 700+, env `USERNAME_DEEP=1`) | — ✅ |
 
 ✅ = бесплатно, без ключа, работает «из коробки».
 
