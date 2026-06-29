@@ -150,6 +150,13 @@ export default function App() {
     run(g.type, v, g.country);
   }
 
+  function quick(v: string) {
+    setQuery(v);
+    setActive(0);
+    const g = detect(v)[0];
+    if (g) run(g.type, v, g.country);
+  }
+
   const found = result?.findings.filter((f) => f.confidence) ?? [];
 
   return (
@@ -289,9 +296,23 @@ export default function App() {
           )}
 
           {!result && !error && !progress && (
-            <div style={{ textAlign: "center", color: "var(--text-muted)", padding: "80px 20px" }}>
+            <div style={{ textAlign: "center", color: "var(--text-muted)", padding: "72px 20px" }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>⊹</div>
-              <p style={{ fontSize: 14 }}>Введите сущность — тип определится автоматически.</p>
+              <p style={{ fontSize: 14, marginBottom: 18 }}>Введите сущность — тип определится автоматически. Или попробуйте пример:</p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+                {[
+                  { label: "домен", v: "github.com" },
+                  { label: "IP", v: "8.8.8.8" },
+                  { label: "username", v: "torvalds" },
+                  { label: "email", v: "test@gmail.com" },
+                  { label: "BTC-адрес", v: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" },
+                ].map((ex) => (
+                  <button key={ex.v} onClick={() => quick(ex.v)}
+                    style={{ fontSize: 12, padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border)", background: "var(--surface-1)", color: "var(--text-secondary)", cursor: "pointer" }}>
+                    {ex.label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
