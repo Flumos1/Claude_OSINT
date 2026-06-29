@@ -50,10 +50,13 @@
 
 | Инструмент | Назначение |
 |-----------|-----------|
-| Sherlock | Username по сотням сайтов |
-| Maigret | Расширенный аналог Sherlock + извлечение данных |
+| Maigret | **Топ класса:** username по 3100+ сайтам (v0.5), рекурсивный поиск связанных аккаунтов, отчёты HTML/PDF/XMind/Markdown |
+| Sherlock | Username по 400+ сайтам; лёгкий, скриптуется, CSV/XLSX, прокси/Tor |
+| WhatsMyName ([webbreacher](https://github.com/webbreacher/whatsmyname)) | 700+ платформ; open-source JSON-датасет (M. Hoffman) — детект-основа многих тулз; есть веб-версии без установки |
+| Aliens Eye ([arxhr007](https://github.com/arxhr007/Aliens_eye)) | 840+ аккаунтов, AI-детекция + confidence score 0–100% (v2.0, радар 2026-06) |
+| Blackbird ([p1ngul1n0](https://github.com/p1ngul1n0/blackbird)) | Username по 600+ сайтам, современный UI/JSON-отчёты |
 | user-scanner (kaifcodec) | Email+Username, 205+ векторов (MIT; радар 2026-06) |
-| Holehe | Проверка, где зарегистрирован email (по «забыли пароль») |
+| Holehe | Проверка, где зарегистрирован email (по «забыли пароль»), 120+ сервисов |
 | PhoneInfoga | Разведка по телефону |
 | GHunt | Разведка по Google-аккаунту/Gmail |
 

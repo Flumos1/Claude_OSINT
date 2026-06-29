@@ -6,6 +6,27 @@
 
 ---
 
+## Прогон 2026-06-29
+
+Источник: Telegram-канал DevHub (анонс тулзы) + веб-сверка с альтернативами по username-OSINT.
+
+### 👀 Наблюдать / завести как внешний инструмент
+| Репо | Чем полезно | Решение |
+|------|-------------|---------|
+| [arxhr007/Aliens_eye](https://github.com/arxhr007/Aliens_eye) | 840+ аккаунтов, AI-детекция + confidence score 0–100% (v2.0, июнь 2026). Фишка — скоринг уверенности, которого нет у Maigret. | В каталог (ники). Confidence-скоринг — идея для `username_sweep` (ранжировать хиты, резать ложные). |
+| [webbreacher/whatsmyname](https://github.com/webbreacher/whatsmyname) | 700+ платформ, open-source JSON-датасет (M. Hoffman) — детект-основа многих тулз; веб-версии без установки. | В каталог. Датасет — кандидат как источник правил для `username_sweep`. |
+| [p1ngul1n0/blackbird](https://github.com/p1ngul1n0/blackbird) | Username по 600+ сайтам, современный UI/JSON. | В каталог как альтернатива Sherlock/Maigret. |
+
+> ⚠️ Подача в Telegram («пробиваем ЛЮБОГО», «без ограничений») — маркетинг в серой зоне.
+> Сами инструменты работают только по публичным данным; применять — строго в рамках
+> [ethics-legal.md](ethics-legal.md) (KYC/DD/CTF/пентест с основанием), без слежки за частными лицами.
+
+### Решение (2026-06-29)
+Добавлены в [tools-catalog.md](tools-catalog.md) «Люди / ники». Заметка по Maigret обновлена
+актуальными данными (v0.5, 3100+ сайтов, рекурсия). Идею confidence-скоринга — в бэклог `username_sweep`.
+
+---
+
 ## Прогон 2026-06-10
 
 Источники: GitHub `topic:osint` + `created:>2025` (по звёздам), Trendshift тема web-scraping.
