@@ -1,4 +1,5 @@
 fastapi>=0.110
 uvicorn[standard]>=0.29
 markdown>=3.6
+python-multipart>=0.0.9
 # движок берёт зависимости из ../scripts/requirements.txt (requests, dnspython, python-dotenv)

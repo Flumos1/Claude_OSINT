@@ -62,7 +62,9 @@
 4. ✅ **Менеджмент кейсов + граф + экспорт:** `web/cases_store.py` (create/save/
    aggregate/report) + `/api/cases*`; `CasesView` + `Graph` (vis-network); подсказка
    «Сохранить в кейс» пишет результат с provenance; экспорт отчёта в Markdown.
-5. **Deploy-пакет:** auth, мульти-юзер, Docker, reverse-proxy.
+5. 🟡 **Deploy-пакет:** ✅ Docker (multi-stage) + docker-compose + DEPLOY.md;
+   ✅ опциональная токен-авторизация (`OSINT_TOKEN`, cookie/X-Token, страница /login).
+   Осталось: полноценный мульти-юзер (аккаунты/БД) и пример reverse-proxy (TLS).
 
 ## Зависимости (требуется установить)
 

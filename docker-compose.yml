@@ -1,0 +1,24 @@
+# Claude OSINT — деплой одной командой: docker compose up -d --build
+# Затем открой http://localhost:8000 (редиректит на /app/).
+#
+# Безопасность: данные расследований чувствительны. Для доступа извне localhost
+# задай OSINT_TOKEN (включает токен-авторизацию) и поставь перед сервисом
+# reverse-proxy с TLS (Caddy/nginx). Без токена сервис открыт всем в сети.
+
+services:
+  osint:
+    build: .
+    image: claude-osint:latest
+    ports:
+      - "8000:8000"
+    environment:
+      # Токен-авторизация (пусто = выключена, только для localhost!):
+      - OSINT_TOKEN=${OSINT_TOKEN:-}
+      # Глубокий username-скан (нужен датасет, см. ниже):
+      - USERNAME_DEEP=${USERNAME_DEEP:-}
+    volumes:
+      # Персистентность кейсов и собранных данных между перезапусками:
+      - ./cases:/app/cases
+      # (опц.) датасет WhatsMyName для deep-режима — положи рядом и раскомментируй:
+      # - ./scripts/wmn-data.json:/app/scripts/wmn-data.json:ro
+    restart: unless-stopped

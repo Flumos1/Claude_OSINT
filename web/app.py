@@ -11,12 +11,14 @@ Claude OSINT — веб-оболочка (FastAPI) поверх движка э�
 источники по странам, скилы-плейбуки, кейсы. Локально, без внешних зависимостей рантайма.
 """
 import json
+import os
 import re
 import sys
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, StreamingResponse
+from fastapi import FastAPI, Form, HTTPException, Request
+from fastapi.responses import (FileResponse, HTMLResponse, JSONResponse,
+                               RedirectResponse, StreamingResponse)
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -42,6 +44,51 @@ except ImportError:
     md = None
 
 app = FastAPI(title="Claude OSINT", docs_url="/api/docs")
+
+# Опциональная токен-авторизация (deploy-ready). Пусто = выключена (локаль).
+# Когда задана OSINT_TOKEN, доступ к /api/* требует cookie osint_token или
+# заголовка X-Token, равного токену. UI ставит cookie через /login.
+OSINT_TOKEN = os.getenv("OSINT_TOKEN", "").strip()
+
+_LOGIN_HTML = """<!doctype html><html lang=ru><meta charset=utf-8>
+<title>Claude OSINT — вход</title>
+<style>body{{font-family:Inter,system-ui,sans-serif;background:#0d1117;color:#e6edf3;
+display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}}
+form{{background:#161b22;border:1px solid #272e3a;border-radius:12px;padding:28px;width:300px}}
+input{{width:100%;padding:9px 12px;margin:10px 0;background:#0d1117;border:1px solid #272e3a;
+border-radius:8px;color:#e6edf3;font-size:14px;box-sizing:border-box}}
+button{{width:100%;padding:10px;background:#4c8dff;color:#fff;border:0;border-radius:8px;
+font-size:14px;cursor:pointer}}h1{{font-size:16px;margin:0 0 4px}}p{{color:#9aa7b5;font-size:12px;margin:0}}
+.err{{color:#f85149;font-size:12px}}</style>
+<form method=post action=/login><h1>Claude OSINT</h1>
+<p>Введите токен доступа</p>{err}
+<input type=password name=token placeholder=токен autofocus>
+<button type=submit>Войти</button></form></html>"""
+
+
+@app.middleware("http")
+async def _auth(request: Request, call_next):
+    if OSINT_TOKEN and request.url.path.startswith("/api"):
+        tok = (request.headers.get("X-Token")
+               or request.cookies.get("osint_token") or "")
+        if tok != OSINT_TOKEN:
+            return JSONResponse({"detail": "Не авторизован"}, status_code=401)
+    return await call_next(request)
+
+
+@app.get("/login", response_class=HTMLResponse)
+def login_form():
+    return _LOGIN_HTML.format(err="")
+
+
+@app.post("/login")
+def login_submit(token: str = Form("")):
+    if not OSINT_TOKEN or token == OSINT_TOKEN:
+        resp = RedirectResponse("/app/", status_code=303)
+        resp.set_cookie("osint_token", token, httponly=True, samesite="lax")
+        return resp
+    return HTMLResponse(_LOGIN_HTML.format(err="<p class=err>Неверный токен</p>"), status_code=401)
+
 
 COUNTRY_META = {
     "ua": {"flag": "🇺🇦", "name": "Україна", "priority": True},

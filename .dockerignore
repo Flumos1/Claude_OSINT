@@ -1,0 +1,13 @@
+.git
+**/node_modules
+**/.venv
+**/__pycache__
+**/*.pyc
+web/static/dist
+scripts/wmn-data.json
+data
+cases/*/data
+cases/*/screenshots
+*.log
+.claude
+memory
