@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { detect, type Guess } from "@/lib/detect";
-import { enrich, type EnrichResult, type Finding } from "@/lib/api";
+import { enrich, startJob, streamJob, type EnrichResult, type Finding } from "@/lib/api";
 import { suggest, type Suggestion } from "@/lib/suggest";
 
 const NAV = [
@@ -37,6 +37,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<EnrichResult | null>(null);
+  const [progress, setProgress] = useState<{ checked: number; total: number; found: number; mode?: string } | null>(null);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   const guesses = useMemo<Guess[]>(() => detect(query), [query]);
@@ -58,6 +59,25 @@ export default function App() {
       setError(e instanceof Error ? e.message : String(e));
       setResult(null);
     } finally {
+      setLoading(false);
+    }
+  }
+
+  async function runDeep(value: string) {
+    setLoading(true);
+    setError(null);
+    setProgress({ checked: 0, total: 0, found: 0 });
+    try {
+      const id = await startJob("username_deep", value);
+      streamJob(id, (e) => {
+        if (e.event === "start") setProgress({ checked: 0, total: e.total ?? 0, found: 0, mode: e.mode });
+        else if (e.event === "progress") setProgress({ checked: e.checked ?? 0, total: e.total ?? 0, found: e.found ?? 0, mode: e.mode });
+        else if (e.event === "done" && e.result) { setResult(e.result); setProgress(null); setLoading(false); }
+        else if (e.event === "error") { setError(e.error ?? "ошибка джобы"); setProgress(null); setLoading(false); }
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setProgress(null);
       setLoading(false);
     }
   }
@@ -126,7 +146,21 @@ export default function App() {
             </div>
           )}
 
-          {!result && !error && (
+          {progress && (
+            <div style={{ background: "var(--surface-1)", border: "1px solid var(--border)", borderRadius: 12, padding: 14, marginBottom: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 8 }}>
+                <span>Deep-скан{progress.mode ? ` · ${progress.mode}` : ""}</span>
+                <span className="mono" style={{ color: "var(--text-secondary)" }}>
+                  {progress.checked}/{progress.total || "…"} · найдено {progress.found}
+                </span>
+              </div>
+              <div style={{ height: 6, background: "var(--surface-2)", borderRadius: 6, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${progress.total ? Math.round((progress.checked / progress.total) * 100) : 0}%`, background: "var(--accent)", transition: "width .2s" }} />
+              </div>
+            </div>
+          )}
+
+          {!result && !error && !progress && (
             <div style={{ textAlign: "center", color: "var(--text-muted)", padding: "80px 20px" }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>⊹</div>
               <p style={{ fontSize: 14 }}>Введите сущность — тип определится автоматически.</p>
@@ -154,8 +188,11 @@ export default function App() {
                   <div style={{ width: 230, flexShrink: 0 }}>
                     <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 8 }}>💡 Подсказки · что дальше</div>
                     {suggestions.map((s, i) => (
-                      <div key={i} onClick={() => s.pivot && run(s.pivot.type, s.pivot.value, s.pivot.country)}
-                        style={{ marginBottom: 8, padding: "11px 13px", borderRadius: 12, cursor: s.pivot ? "pointer" : "default",
+                      <div key={i} onClick={() => {
+                        if (s.action === "deep") runDeep(result.input.value);
+                        else if (s.pivot) run(s.pivot.type, s.pivot.value, s.pivot.country);
+                      }}
+                        style={{ marginBottom: 8, padding: "11px 13px", borderRadius: 12, cursor: s.pivot || s.action ? "pointer" : "default",
                           background: s.tone === "accent" ? "var(--accent-bg)" : "var(--surface-1)",
                           border: "1px solid var(--border)" }}>
                         <div style={{ fontSize: 13, fontWeight: 500, color: s.tone === "accent" ? "var(--accent)" : "var(--text-primary)" }}>{s.title}</div>

@@ -41,3 +41,35 @@ export async function enrich(
   if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || `HTTP ${r.status}`);
   return r.json();
 }
+
+export interface JobEvent {
+  event: "start" | "progress" | "done" | "error";
+  total?: number;
+  checked?: number;
+  found?: number;
+  mode?: string;
+  result?: EnrichResult;
+  error?: string;
+}
+
+export async function startJob(kind: string, value: string): Promise<string> {
+  const r = await fetch("/api/jobs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind, value }),
+  });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || `HTTP ${r.status}`);
+  return (await r.json()).id;
+}
+
+// Подписка на прогресс джобы через SSE. Закрывает поток на done/error.
+export function streamJob(id: string, onEvent: (e: JobEvent) => void): EventSource {
+  const es = new EventSource(`/api/jobs/${id}/stream`);
+  es.onmessage = (m) => {
+    const e = JSON.parse(m.data) as JobEvent;
+    onEvent(e);
+    if (e.event === "done" || e.event === "error") es.close();
+  };
+  es.onerror = () => es.close();
+  return es;
+}

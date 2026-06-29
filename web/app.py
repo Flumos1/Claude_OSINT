@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -33,6 +33,7 @@ sys.path.insert(0, str(SCRIPTS))
 from enrich import run as enrich_run  # noqa: E402
 from enrichers.base import ENTITY_TYPES, REGISTRY  # noqa: E402
 from person_search import dossier_to_markdown, search_person  # noqa: E402
+import jobs as jobq  # noqa: E402
 
 try:
     import markdown as md
@@ -111,6 +112,42 @@ def api_enrich(req: EnrichReq):
     if not req.value.strip():
         raise HTTPException(400, "Пустое значение")
     return enrich_run(req.type, req.value.strip(), req.country)
+
+
+class JobReq(BaseModel):
+    kind: str          # username_deep | username_fast
+    value: str
+
+
+@app.post("/api/jobs")
+def api_job_start(req: JobReq):
+    if not req.value.strip():
+        raise HTTPException(400, "Пустое значение")
+    try:
+        jid = jobq.start(req.kind, req.value.strip())
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"id": jid}
+
+
+@app.get("/api/jobs/{jid}")
+def api_job_status(jid: str):
+    st = jobq.status(jid)
+    if st is None:
+        raise HTTPException(404, "Джоба не найдена")
+    return st
+
+
+@app.get("/api/jobs/{jid}/stream")
+def api_job_stream(jid: str):
+    if jobq.status(jid) is None:
+        raise HTTPException(404, "Джоба не найдена")
+
+    def gen():
+        for ev in jobq.events(jid):
+            yield f"data: {json.dumps(ev, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(gen(), media_type="text/event-stream")
 
 
 class PersonReq(BaseModel):

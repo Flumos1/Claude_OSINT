@@ -9,6 +9,7 @@ export interface Suggestion {
   desc: string;
   tone: "accent" | "neutral";
   pivot?: { type: string; value: string; country?: string };
+  action?: "deep"; // спец-действие: запустить асинхронный deep-скан
 }
 
 function lowConfidence(nodes: GraphNode[]): number {
@@ -34,7 +35,7 @@ export function suggest(res: EnrichResult): Suggestion[] {
   // Тип-специфичные подсказки
   if (t === "username") {
     const low = lowConfidence(res.nodes);
-    out.push({ title: "Запустить deep-режим", desc: "740 сайтов WhatsMyName вместо 21 (USERNAME_DEEP)", tone: "accent" });
+    out.push({ title: "Запустить deep-режим", desc: "740 сайтов WhatsMyName вместо 21 — с прогрессом", tone: "accent", action: "deep" });
     if (low > 0)
       out.push({ title: `${low} хитов под вопросом`, desc: "Низкая уверенность — открыть для ручной проверки аватара", tone: "neutral" });
     const gh = res.nodes.find((n) => n.type === "url" && String(n.value).includes("github.com"));

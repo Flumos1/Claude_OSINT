@@ -175,46 +175,41 @@ def _load_wmn():
     return sites[:cap] if cap > 0 else sites
 
 
-@enricher("username_sweep", "username")
-def enrich_username(value: str) -> EnricherResult:
-    res = EnricherResult("username_sweep", "username", value)
-    u = value.strip().lstrip("@")
-    root = res.node("username", u)
-
-    deep = os.getenv("USERNAME_DEEP", "").lower() in ("1", "true", "yes")
+def _build_tasks(u: str, deep: bool):
+    """Готовит список проверок. Возвращает (tasks, всего_сайтов, режим, note|None)."""
     tasks = [("curated", _check_curated, p) for p in PLATFORMS]
-    checked = len(PLATFORMS)
+    total = len(PLATFORMS)
     mode = "быстрый (21 платформа)"
-
+    note = None
     if deep:
         sites = _load_wmn()
         if sites is None:
-            res.fact("USERNAME_DEEP включён, но датасет не найден — запусти "
-                     "`python scripts/fetch_wmn.py`. Работаю в быстром режиме.", "username_sweep")
+            note = ("USERNAME_DEEP включён, но датасет не найден — запусти "
+                    "`python scripts/fetch_wmn.py`. Работаю в быстром режиме.")
         else:
             tasks += [("wmn", _check_wmn, s) for s in sites]
-            checked += len(sites)
+            total += len(sites)
             mode = f"глубокий (WhatsMyName, {len(sites)} сайтов + 21 куратируемая)"
+    return tasks, total, mode, note
 
-    hits = []
-    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
-        futs = []
-        for kind, fn, item in tasks:
-            futs.append(ex.submit(fn, item[0], item[1], item[2], u) if kind == "curated"
-                        else ex.submit(fn, item, u))
-        for fut in as_completed(futs):
-            try:
-                r = fut.result()
-            except Exception:
-                r = None
-            if r:
-                hits.append(r)
 
+def _submit(ex, tasks, u):
+    futs = []
+    for kind, fn, item in tasks:
+        futs.append(ex.submit(fn, item[0], item[1], item[2], u) if kind == "curated"
+                    else ex.submit(fn, item, u))
+    return futs
+
+
+def _assemble(value: str, u: str, hits: list, total: int, mode: str, deep: bool, note) -> EnricherResult:
+    res = EnricherResult("username_sweep", "username", value)
+    root = res.node("username", u)
+    if note:
+        res.fact(note, "username_sweep")
     hits.sort(key=lambda h: h["score"], reverse=True)
     high = sum(1 for h in hits if h["score"] >= 78)
     mid = sum(1 for h in hits if 55 <= h["score"] < 78)
     low = sum(1 for h in hits if h["score"] < 55)
-
     for h in hits:
         n = res.node("url", h["url"], platform=h["platform"], score=h["score"],
                      confidence=h["grade"], category=h["category"])
@@ -222,11 +217,60 @@ def enrich_username(value: str) -> EnricherResult:
         why = "; ".join(h["reasons"])
         res.fact(f"{h['platform']}: профіль існує ({h['score']}%, {h['grade']}) — {h['url']} [{why}]",
                  f"{h['platform']} (HTTP {h['code']})", h["grade"])
-
-    res.fact(f"Режим: {mode}. Знайдено профілів: {len(hits)} із {checked} перевірених "
+    res.fact(f"Режим: {mode}. Знайдено профілів: {len(hits)} із {total} перевірених "
              f"(висока впевненість ≥78%: {high}, середня 55–77%: {mid}, низька <55%: {low}). "
              f"Низьку — підтверджуй вручну (soft-404/блоки).", "username_sweep")
     if not deep:
         res.fact("Глибше: USERNAME_DEEP=1 + `python scripts/fetch_wmn.py` (700+ сайтів), "
                  "або maigret/whatsmyname/sherlock.", "tools-catalog")
     return res
+
+
+@enricher("username_sweep", "username")
+def enrich_username(value: str) -> EnricherResult:
+    u = value.strip().lstrip("@")
+    deep = os.getenv("USERNAME_DEEP", "").lower() in ("1", "true", "yes")
+    tasks, total, mode, note = _build_tasks(u, deep)
+    hits = []
+    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+        for fut in as_completed(_submit(ex, tasks, u)):
+            try:
+                r = fut.result()
+            except Exception:
+                r = None
+            if r:
+                hits.append(r)
+    return _assemble(value, u, hits, total, mode, deep, note)
+
+
+def stream_username(value: str, deep: bool = True):
+    """Генератор прогресса для асинхронных джоб (web/jobs.py).
+
+    yield-ит события: {'event':'start',...}, ...'progress'..., и финальное
+    {'event':'done','result': <граф в формате enrich.run>}.
+    """
+    u = value.strip().lstrip("@")
+    tasks, total, mode, note = _build_tasks(u, deep)
+    hits, checked = [], 0
+    yield {"event": "start", "total": total, "mode": mode}
+    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+        for fut in as_completed(_submit(ex, tasks, u)):
+            checked += 1
+            try:
+                r = fut.result()
+            except Exception:
+                r = None
+            if r:
+                hits.append(r)
+            if checked % 5 == 0 or checked == total:
+                yield {"event": "progress", "checked": checked, "total": total, "found": len(hits)}
+    res = _assemble(value, u, hits, total, mode, deep, note)
+    result = {
+        "input": {"type": "username", "value": value, "country": None},
+        "enrichers_run": ["username_sweep"],
+        "nodes": [{"id": n.id, "type": n.type, "value": n.value, "attrs": n.attrs} for n in res.nodes],
+        "edges": [{"source": e.source, "target": e.target, "rel": e.rel} for e in res.edges],
+        "findings": [{"label": f.label, "text": f.text, "source": f.source, "confidence": f.confidence}
+                     for f in res.findings],
+    }
+    yield {"event": "done", "result": result}
