@@ -30,6 +30,21 @@ python app.py
 Движок энричеров берётся из `../scripts` (нужны и его зависимости:
 `pip install -r ..\scripts\requirements.txt`). API-докуменация: `/api/docs`.
 
+## Новый фронтенд (React + Vite) — `ui/`
+
+Идёт переход на современный стек (план: [ARCHITECTURE.md](ARCHITECTURE.md)).
+Итерация 1 — умный поиск с авто-детектом типа и панелью **подсказок** «что дальше».
+
+```powershell
+cd web\ui
+npm install
+npm run dev          # дев-сервер Vite, проксирует /api на FastAPI (:8000)
+# или сборка в production:
+npm run build        # → web/static/dist; FastAPI отдаёт на /app/ (/ редиректит туда)
+```
+
+Для dev запусти параллельно бэкенд (`python app.py`). Старый SPA доступен на `/legacy`.
+
 ## Архитектура
 
 - `app.py` — FastAPI: REST API (`/api/meta`, `/api/enrich`, `/api/sources/{code}`,
