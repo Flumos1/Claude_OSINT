@@ -28,3 +28,6 @@ web/ui/node_modules/
 # OS
 Thumbs.db
 .DS_Store
+
+# Локальный конфиг превью (машинно-специфичные пути)
+.claude/launch.json

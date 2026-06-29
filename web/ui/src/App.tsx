@@ -49,7 +49,15 @@ export default function App() {
   );
   const [view, setView] = useState("search");
   const [me, setMe] = useState<Me | null>(null);
+  const [mobile, setMobile] = useState(() => window.innerWidth < 760);
+  const [menuOpen, setMenuOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function onResize() { setMobile(window.innerWidth < 760); }
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => { getMe().then(setMe).catch(() => setMe(null)); }, []);
 
@@ -144,6 +152,7 @@ export default function App() {
 
   return (
     <div style={{ display: "flex", height: "100%" }}>
+      {!mobile && (
       <aside style={{ width: 184, flexShrink: 0, background: "var(--surface-1)", borderRight: "1px solid var(--border)", padding: 14, display: "flex", flexDirection: "column", gap: 2 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "4px 8px 16px" }}>
           <div style={{ width: 26, height: 26, borderRadius: 7, background: "var(--accent-bg)", color: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600 }}>OS</div>
@@ -167,12 +176,38 @@ export default function App() {
           </div>
         </div>
       </aside>
+      )}
 
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "auto" }}>
-        <header style={{ position: "sticky", top: 0, background: "var(--surface-0)", borderBottom: "1px solid var(--border)", padding: 14, zIndex: 2, display: "flex", gap: 8, alignItems: "center" }}>
+        {mobile && (
+          <div style={{ background: "var(--surface-1)", borderBottom: "1px solid var(--border)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px" }}>
+              <button onClick={() => setMenuOpen((o) => !o)} aria-label="Меню"
+                style={{ background: "none", border: "1px solid var(--border)", borderRadius: "var(--radius)", color: "var(--text-primary)", fontSize: 18, lineHeight: 1, padding: "4px 9px", cursor: "pointer" }}>≡</button>
+              <strong style={{ fontSize: 14 }}>Claude OSINT</strong>
+            </div>
+            {menuOpen && (
+              <div style={{ padding: "0 8px 8px" }}>
+                {nav.map((n) => (
+                  <div key={n.id} onClick={() => { setView(n.id); setMenuOpen(false); }}
+                    style={{ padding: "9px 10px", borderRadius: "var(--radius)", fontSize: 13, color: n.id === view ? "var(--accent)" : "var(--text-secondary)", background: n.id === view ? "var(--accent-bg)" : "transparent", cursor: "pointer" }}>
+                    {n.label}
+                  </div>
+                ))}
+                {me?.user && (
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "9px 10px", fontSize: 12, color: "var(--text-secondary)" }}>
+                    <span>{me.user.username} · {me.user.role}</span>
+                    <button onClick={() => logout().then(() => (location.href = "/login"))} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: 12 }}>выйти</button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+        <header style={{ position: "sticky", top: 0, background: "var(--surface-0)", borderBottom: "1px solid var(--border)", padding: 14, zIndex: 2, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           {view === "search" ? (
             <form onSubmit={onSubmit} style={{ flex: 1, display: "flex", gap: 8, alignItems: "center" }}>
-              <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, background: "var(--surface-1)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "8px 12px" }}>
+              <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", background: "var(--surface-1)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "8px 12px" }}>
                 <span style={{ color: "var(--text-muted)" }}>⌕</span>
                 <input
                   ref={searchRef}
@@ -259,15 +294,15 @@ export default function App() {
 
           {result && (
             <>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 10, marginBottom: 16 }}>
                 <Stat label="Найдено" value={found.length} />
                 <Stat label="Высокая ≥78%" value={found.filter((f) => gradeTone(f.confidence) === "success").length} color="var(--success)" />
                 <Stat label="Проверить" value={found.filter((f) => gradeTone(f.confidence) !== "success").length} color="var(--warning)" />
                 <Stat label="Энричеров" value={result.enrichers_run.length} />
               </div>
 
-              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexDirection: mobile ? "column" : "row" }}>
+                <div style={{ flex: 1, minWidth: 0, width: "100%" }}>
                   <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 8 }}>
                     Находки · {result.input.type}: <span className="mono">{result.input.value}</span>
                   </div>
@@ -275,7 +310,7 @@ export default function App() {
                 </div>
 
                 {suggestions.length > 0 && (
-                  <div style={{ width: 230, flexShrink: 0 }}>
+                  <div style={{ width: mobile ? "100%" : 230, flexShrink: 0 }}>
                     <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 8 }}>💡 Подсказки · что дальше</div>
                     {suggestions.map((s, i) => (
                       <div key={i} onClick={() => {
