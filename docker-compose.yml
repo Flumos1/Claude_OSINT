@@ -12,13 +12,19 @@ services:
     ports:
       - "8000:8000"
     environment:
-      # Токен-авторизация (пусто = выключена, только для localhost!):
+      # Мульти-юзер: включить авторизацию и засеять админа при первом старте.
+      - OSINT_AUTH=${OSINT_AUTH:-}
+      - OSINT_ADMIN_USER=${OSINT_ADMIN_USER:-admin}
+      - OSINT_ADMIN_PASSWORD=${OSINT_ADMIN_PASSWORD:-}
+      # API-токен (fallback для программных клиентов, заголовок X-Token):
       - OSINT_TOKEN=${OSINT_TOKEN:-}
       # Глубокий username-скан (нужен датасет, см. ниже):
       - USERNAME_DEEP=${USERNAME_DEEP:-}
     volumes:
       # Персистентность кейсов и собранных данных между перезапусками:
       - ./cases:/app/cases
+      # БД пользователей/сессий (SQLite):
+      - ./data:/app/data
       # (опц.) датасет WhatsMyName для deep-режима — положи рядом и раскомментируй:
       # - ./scripts/wmn-data.json:/app/scripts/wmn-data.json:ro
     restart: unless-stopped

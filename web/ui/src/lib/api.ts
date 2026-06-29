@@ -97,6 +97,38 @@ export interface ToolsResponse {
   items: ToolItem[];
 }
 
+export interface Me {
+  user: { id: number; username: string; role: string } | null;
+  auth_enabled: boolean;
+}
+
+export async function getMe(): Promise<Me> {
+  const r = await fetch("/api/auth/me");
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+export async function logout(): Promise<void> {
+  await fetch("/api/auth/logout", { method: "POST" });
+}
+
+export interface UserRow { username: string; role: string; created: string }
+
+export async function listUsers(): Promise<UserRow[]> {
+  const r = await fetch("/api/users");
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+export async function createUser(username: string, password: string, role: string): Promise<{ username: string }> {
+  const r = await fetch("/api/users", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password, role }),
+  });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || `HTTP ${r.status}`);
+  return r.json();
+}
+
 export interface PersonReq {
   name: string; dob?: string; rnokpp?: string; email?: string;
   phone?: string; username?: string; countries: string[];

@@ -1,12 +1,13 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { detect, type Guess } from "@/lib/detect";
 import { enrich, startJob, streamJob, type EnrichResult, type Finding } from "@/lib/api";
 import { suggest, type Suggestion } from "@/lib/suggest";
 import ToolsView from "@/ToolsView";
 import CasesView from "@/CasesView";
 import PersonView from "@/PersonView";
+import UsersView from "@/UsersView";
 import Graph from "@/Graph";
-import { listCases, createCase, saveToCase } from "@/lib/api";
+import { listCases, createCase, saveToCase, getMe, logout, type Me } from "@/lib/api";
 
 const NAV = [
   { id: "search", label: "Поиск" },
@@ -45,6 +46,11 @@ export default function App() {
   const [progress, setProgress] = useState<{ checked: number; total: number; found: number; mode?: string } | null>(null);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [view, setView] = useState("search");
+  const [me, setMe] = useState<Me | null>(null);
+
+  useEffect(() => { getMe().then(setMe).catch(() => setMe(null)); }, []);
+
+  const nav = me?.user?.role === "admin" ? [...NAV, { id: "users", label: "Пользователи" }] : NAV;
 
   const guesses = useMemo<Guess[]>(() => detect(query), [query]);
   const suggestions: Suggestion[] = useMemo(() => (result ? suggest(result) : []), [result]);
@@ -124,13 +130,22 @@ export default function App() {
           <div style={{ width: 26, height: 26, borderRadius: 7, background: "var(--accent-bg)", color: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600 }}>OS</div>
           <span style={{ fontSize: 14, fontWeight: 600 }}>Claude OSINT</span>
         </div>
-        {NAV.map((n) => (
+        {nav.map((n) => (
           <div key={n.id} onClick={() => setView(n.id)} style={{ padding: "8px 10px", borderRadius: "var(--radius)", fontSize: 13, color: n.id === view ? "var(--accent)" : "var(--text-secondary)", background: n.id === view ? "var(--accent-bg)" : "transparent", cursor: "pointer" }}>
             {n.label}
           </div>
         ))}
-        <div style={{ marginTop: "auto", fontSize: 11, color: "var(--text-muted)", lineHeight: 1.5, padding: "10px 8px 0" }}>
-          Только открытые источники. Этичный OSINT.
+        <div style={{ marginTop: "auto", padding: "10px 8px 0" }}>
+          {me?.user && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, fontSize: 12 }}>
+              <span style={{ color: "var(--text-secondary)" }}>{me.user.username} · {me.user.role}</span>
+              <button onClick={() => logout().then(() => (location.href = "/login"))}
+                style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: 12 }}>выйти</button>
+            </div>
+          )}
+          <div style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.5 }}>
+            Только открытые источники. Этичный OSINT.
+          </div>
         </div>
       </aside>
 
@@ -186,6 +201,7 @@ export default function App() {
           )
         )}
         {view === "person" && <PersonView />}
+        {view === "users" && <UsersView />}
 
         <main style={{ padding: 16, flex: 1, display: view === "search" ? "block" : "none" }}>
           {error && (
