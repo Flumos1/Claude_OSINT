@@ -83,6 +83,8 @@ $env:USERNAME_DEEP=1; python enrich.py username johndoe   # PowerShell
 | `ip_ports` | ip | открытые порты/сервисы/CVE (Shodan InternetDB) | — ✅ |
 | `ip_reputation` | ip | репутация/шум (GreyNoise Community) | — ✅ |
 | `typosquat` | domain | look-alike домены + проверка регистрации (DNS) | — ✅ |
+| `ioc` | ip/domain/url | репутация: VirusTotal + AbuseIPDB (IP) | VT/AbuseIPDB (free) |
+| `domain_history` | domain | DNS/поддомены/NS (SecurityTrails) | SecurityTrails (free) |
 | `crypto_address` | crypto | баланс/активность BTC (blockchain.info) и ETH (ethplorer) | — ✅ |
 | `archive` | url | ближайший снимок Wayback (сохранение доказательств) | — ✅ |
 | `email_gravatar` | email | Gravatar + пивот в домен | — |
@@ -96,10 +98,11 @@ $env:USERNAME_DEEP=1; python enrich.py username johndoe   # PowerShell
 
 🇺🇦 **Украина:** `opendatabot` расширить (CourtService/PenaltyService/RealEstateService по ключу);
 `youcontrol` (YouScore API, по ключу).
-**Нейтральные (которых нет, приоритет по flowsint):** `domain.ssl/whois_history`,
-`username.maigret` (глубже sweep), `phone.carrier`, `ioc` (VT/AbuseIPDB — по ключам).
+**Осталось:** `username.maigret` (глубже sweep), `phone.carrier`, `domain.ssl/whois`.
 ✅ Реализованы keyless: `ip.ports` (Shodan InternetDB), `ip_reputation` (GreyNoise),
 `typosquat` (свой генератор + DNS), `crypto_address` (BTC/ETH), `archive` (Wayback).
+✅ Реализованы key-gated (graceful без ключа): `ioc` (VirusTotal + AbuseIPDB),
+`domain_history` (SecurityTrails). Все ключи free-tier — см. `.env.example`.
 
 > Принцип: пассивные источники по умолчанию; ключи и .env — вне репозитория;
 > результаты складывай в `cases/<slug>/data/`. Полный список flowsint-энричеров как

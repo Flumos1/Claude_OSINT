@@ -11,8 +11,16 @@ base.py — контракт энричеров (по мотивам flowsint fl
 """
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
+
+# Централизованная загрузка scripts/.env — чтобы любой key-gated энричер видел ключи.
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
+except Exception:
+    pass
 
 ENTITY_TYPES = {
     "domain", "ip", "email", "username", "phone",
