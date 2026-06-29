@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchTools, type ToolsResponse } from "@/lib/api";
+import { fetchTools, fetchCurated, type ToolsResponse, type CuratedTool } from "@/lib/api";
 
 export default function ToolsView() {
   const [q, setQ] = useState("");
@@ -7,6 +7,17 @@ export default function ToolsView() {
   const [flagged, setFlagged] = useState(false);
   const [data, setData] = useState<ToolsResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [curated, setCurated] = useState<CuratedTool[]>([]);
+  const [copied, setCopied] = useState("");
+
+  useEffect(() => { fetchCurated().then((c) => setCurated(c.tools)).catch(() => setCurated([])); }, []);
+
+  function copy(cmd: string, id: string) {
+    navigator.clipboard?.writeText(cmd).then(() => {
+      setCopied(id);
+      setTimeout(() => setCopied(""), 1200);
+    });
+  }
 
   useEffect(() => {
     setLoading(true);
@@ -27,6 +38,29 @@ export default function ToolsView() {
         Наличие в списке ≠ одобрение — сверяйся с ethics-legal.
       </div>
 
+      {curated.length > 0 && (
+        <div style={{ marginBottom: 22 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>★ Рабочие лошадки — с install-подсказкой</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10 }}>
+            {curated.map((t) => (
+              <div key={t.id} style={{ background: "var(--surface-1)", border: "1px solid var(--border-strong)", borderRadius: 12, padding: "12px 14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                  <a href={t.url} target="_blank" rel="noreferrer" style={{ fontSize: 14, fontWeight: 500, color: "var(--accent)", textDecoration: "none" }}>{t.name}</a>
+                  <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 20, background: "var(--surface-2)", color: "var(--text-secondary)" }}>{t.method}</span>
+                </div>
+                {t.note && <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, margin: "4px 0 7px" }}>{t.note}</div>}
+                <div onClick={() => copy(t.install, t.id)} title="Скопировать"
+                  className="mono"
+                  style={{ fontSize: 11, background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 6, padding: "6px 8px", color: "var(--text-primary)", cursor: "pointer", wordBreak: "break-all" }}>
+                  {copied === t.id ? "✓ скопировано" : `$ ${t.install}`}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Полный индекс</div>
       <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Поиск по названию или описанию…"
           style={{ flex: 1, minWidth: 220, background: "var(--surface-1)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "8px 12px", color: "var(--text-primary)", fontSize: 14, outline: "none" }} />

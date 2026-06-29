@@ -97,6 +97,50 @@ export interface ToolsResponse {
   items: ToolItem[];
 }
 
+export interface PersonReq {
+  name: string; dob?: string; rnokpp?: string; email?: string;
+  phone?: string; username?: string; countries: string[];
+}
+
+export interface PersonResult {
+  basis: string;
+  name_variants: string[];
+  id_check: Record<string, unknown>;
+  registries: Record<string, { name: string; url: string; note: string }[]>;
+  sanctions: unknown;
+  notes: string[];
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  findings: Finding[];
+}
+
+export async function searchPerson(req: PersonReq): Promise<PersonResult> {
+  const r = await fetch("/api/person", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(req),
+  });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || `HTTP ${r.status}`);
+  return r.json();
+}
+
+export async function personReport(req: PersonReq): Promise<string> {
+  const r = await fetch("/api/person/report", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(req),
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return (await r.json()).markdown;
+}
+
+export interface CuratedTool {
+  id: string; name: string; category: string; url: string;
+  method: string; install: string; note?: string;
+}
+
+export async function fetchCurated(): Promise<{ tools: CuratedTool[]; meta: Record<string, string> }> {
+  const r = await fetch("/api/tools/curated");
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
 export async function fetchTools(p: { q?: string; category?: string; flagged?: boolean; limit?: number }): Promise<ToolsResponse> {
   const u = new URLSearchParams();
   if (p.q) u.set("q", p.q);

@@ -228,6 +228,15 @@ def api_tools(q: str = "", category: str = "", flagged: bool = False,
     }
 
 
+@app.get("/api/tools/curated")
+def api_tools_curated():
+    f = KNOWLEDGE / "curated-tools.json"
+    if not f.exists():
+        return {"tools": [], "meta": {}}
+    data = json.loads(f.read_text(encoding="utf-8"))
+    return {"tools": data.get("tools", []), "meta": data.get("_meta", {})}
+
+
 class JobReq(BaseModel):
     kind: str          # username_deep | username_fast
     value: str

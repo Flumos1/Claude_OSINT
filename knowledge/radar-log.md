@@ -6,6 +6,31 @@
 
 ---
 
+## Прогон 2026-06-29 (b) — awesome-osint-arsenal
+
+Источник: [rawfilejson/awesome-osint-arsenal](https://github.com/rawfilejson/awesome-osint-arsenal)
+(~1k★, Kali-арсенал, ~500 тулз в `tools.json` + bash-инсталляторы).
+
+### ❌ Не копировать (нет лицензии)
+| Что | Решение |
+|-----|---------|
+| `tools.json` (500 тулз с полем `install`) | **Лицензия не заявлена → all rights reserved.** Данные не берём. |
+| bash/Kali-инсталляторы (`osint.sh` и т.д.) | Не наш стек (Windows + веб-платформа). |
+
+### ✅ Взять идею (реализовать своё)
+Ценное — **install-метаданные** (`method` pip/git/go/apt/docker + команда), которых нет
+в нашем индексе из jivoi. Реализуем чисто: своя компиляция `knowledge/curated-tools.json`
+(install выводим из официальных источников каждой тулзы — PyPI/их репо), показываем
+«рабочие лошадки» с install-подсказкой в `ToolsView`. Чужие данные не используем.
+Таксономия категорий (`people-identity`/`dark-web`/`crypto-blockchain`/`data-breach`) —
+как референс для нашего фильтра. red-team/dark-web секции — под этик-флаги.
+
+### Решение — ВНЕДРЕНО (2026-06-29)
+`knowledge/curated-tools.json` (наши рабочие лошадки + install) + `/api/tools/curated` +
+закреплённый блок в `ToolsView`. Команды — собственная компиляция, не из их файла.
+
+---
+
 ## Прогон 2026-06-29
 
 Источник: Telegram-канал DevHub (анонс тулзы) + веб-сверка с альтернативами по username-OSINT.

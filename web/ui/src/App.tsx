@@ -4,6 +4,7 @@ import { enrich, startJob, streamJob, type EnrichResult, type Finding } from "@/
 import { suggest, type Suggestion } from "@/lib/suggest";
 import ToolsView from "@/ToolsView";
 import CasesView from "@/CasesView";
+import PersonView from "@/PersonView";
 import Graph from "@/Graph";
 import { listCases, createCase, saveToCase } from "@/lib/api";
 
@@ -184,11 +185,7 @@ export default function App() {
             </div>
           )
         )}
-        {view === "person" && (
-          <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)", fontSize: 14 }}>
-            Раздел «Поиск ФЛ» — скоро.
-          </div>
-        )}
+        {view === "person" && <PersonView />}
 
         <main style={{ padding: 16, flex: 1, display: view === "search" ? "block" : "none" }}>
           {error && (
