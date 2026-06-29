@@ -88,6 +88,7 @@ $env:USERNAME_DEEP=1; python enrich.py username johndoe   # PowerShell
 | `crypto_address` | crypto | баланс/активность BTC (blockchain.info) и ETH (ethplorer) | — ✅ |
 | `archive` | url | ближайший снимок Wayback (сохранение доказательств) | — ✅ |
 | `email_gravatar` | email | Gravatar + пивот в домен | — |
+| `email_mx` | email | MX/SPF/DMARC + детект одноразовых доменов (DNS) | — ✅ |
 | `email_leaks` | email | HIBP (присутствие в утечках) | HIBP_API_KEY |
 | `phone_info` | phone | оператор/регион/тип (офлайн phonenumbers) | — ✅ |
 | `username_sweep` | username | чек ника со скорингом 0–100%; быстрый (21 платф.) / deep (WhatsMyName 700+, env `USERNAME_DEEP=1`) | — ✅ |

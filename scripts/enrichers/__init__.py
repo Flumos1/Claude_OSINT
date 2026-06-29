@@ -6,6 +6,7 @@ from . import (  # noqa: F401
     domain_history_enr,
     email_enr,
     email_leaks_enr,
+    email_mx_enr,
     ioc_enr,
     ip_enr,
     ip_ports_enr,
