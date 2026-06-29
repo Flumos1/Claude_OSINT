@@ -21,6 +21,9 @@ export default function SettingsView() {
             <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}>{k.desc}</div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+            {!k.set && (
+              <a href={k.url} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "var(--accent)", textDecoration: "none", whiteSpace: "nowrap" }}>получить ключ →</a>
+            )}
             <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 20, background: "var(--surface-2)", color: "var(--text-muted)" }}>{k.tier === "free" ? "free" : "платный"}</span>
             <span style={{ fontSize: 11, padding: "2px 9px", borderRadius: 20, background: k.set ? "var(--success-bg)" : "var(--surface-2)", color: k.set ? "var(--success)" : "var(--text-muted)" }}>
               {k.set ? "✓ задан" : "не задан"}

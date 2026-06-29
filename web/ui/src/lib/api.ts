@@ -162,7 +162,7 @@ export async function personReport(req: PersonReq): Promise<string> {
   return (await r.json()).markdown;
 }
 
-export interface KeyStatus { name: string; set: boolean; desc: string; tier: "free" | "paid" }
+export interface KeyStatus { name: string; set: boolean; desc: string; tier: "free" | "paid"; url: string }
 
 export async function fetchKeys(): Promise<KeyStatus[]> {
   const r = await fetch("/api/keys");

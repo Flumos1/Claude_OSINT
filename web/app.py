@@ -289,24 +289,24 @@ def api_tools(q: str = "", category: str = "", flagged: bool = False,
 
 # Статус API-ключей (значения НЕ раскрываются — только задан/нет).
 _KEY_INFO = [
-    ("VIRUSTOTAL_API_KEY", "IOC: репутация IP/домена/URL (VirusTotal)", "free"),
-    ("ABUSEIPDB_API_KEY", "IOC: репутация IP (AbuseIPDB)", "free"),
-    ("SECURITYTRAILS_API_KEY", "История домена, поддомены, DNS", "free"),
-    ("URLSCAN_API_KEY", "Сканы страниц (urlscan.io)", "free"),
-    ("OPENSANCTIONS_API_KEY", "Санкции/PEP live-поиск", "free"),
-    ("NUMVERIFY_API_KEY", "Телефон: оператор/валидация", "free"),
-    ("HIBP_API_KEY", "Email в утечках (Have I Been Pwned)", "paid"),
-    ("SHODAN_API_KEY", "Полные данные хоста (сверх InternetDB)", "paid"),
-    ("FSSP_API_KEY", "🇷🇺 исполнительные производства", "paid"),
-    ("ODB_API_KEY", "🇺🇦 Opendatabot (карточки компаний)", "paid"),
-    ("YOUCONTROL_API_KEY", "🇺🇦 YouControl (связи/реестры)", "paid"),
+    ("VIRUSTOTAL_API_KEY", "IOC: репутация IP/домена/URL (VirusTotal)", "free", "https://www.virustotal.com/gui/my-apikey"),
+    ("ABUSEIPDB_API_KEY", "IOC: репутация IP (AbuseIPDB)", "free", "https://www.abuseipdb.com/account/api"),
+    ("SECURITYTRAILS_API_KEY", "История домена, поддомены, DNS", "free", "https://securitytrails.com/app/account/credentials"),
+    ("URLSCAN_API_KEY", "Сканы страниц (urlscan.io)", "free", "https://urlscan.io/user/profile/"),
+    ("OPENSANCTIONS_API_KEY", "Санкции/PEP live-поиск", "free", "https://www.opensanctions.org/api/"),
+    ("NUMVERIFY_API_KEY", "Телефон: оператор/валидация", "free", "https://numverify.com/product"),
+    ("HIBP_API_KEY", "Email в утечках (Have I Been Pwned)", "paid", "https://haveibeenpwned.com/API/Key"),
+    ("SHODAN_API_KEY", "Полные данные хоста (сверх InternetDB)", "paid", "https://account.shodan.io/"),
+    ("FSSP_API_KEY", "🇷🇺 исполнительные производства", "paid", "https://api-ip.fssp.gov.ru/"),
+    ("ODB_API_KEY", "🇺🇦 Opendatabot (карточки компаний)", "paid", "https://opendatabot.com/api"),
+    ("YOUCONTROL_API_KEY", "🇺🇦 YouControl (связи/реестры)", "paid", "https://youcontrol.com.ua/"),
 ]
 
 
 @app.get("/api/keys")
 def api_keys():
-    return [{"name": n, "set": bool(os.getenv(n, "").strip()), "desc": d, "tier": t}
-            for n, d, t in _KEY_INFO]
+    return [{"name": n, "set": bool(os.getenv(n, "").strip()), "desc": d, "tier": t, "url": u}
+            for n, d, t, u in _KEY_INFO]
 
 
 @app.get("/api/tools/curated")
