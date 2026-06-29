@@ -80,6 +80,8 @@ $env:USERNAME_DEEP=1; python enrich.py username johndoe   # PowerShell
 | `website` | domain | SSL-сертификат, security-заголовки, сервер, robots/security.txt (web-check-стиль) | — ✅ |
 | `secrets_scan` | url | скан страницы на утёкшие секреты (24 паттерна) | — ✅ |
 | `ip_geo_asn` | ip | гео/ASN (ip-api) | — |
+| `ip_ports` | ip | открытые порты/сервисы/CVE (Shodan InternetDB) | — ✅ |
+| `typosquat` | domain | look-alike домены + проверка регистрации (DNS) | — ✅ |
 | `email_gravatar` | email | Gravatar + пивот в домен | — |
 | `email_leaks` | email | HIBP (присутствие в утечках) | HIBP_API_KEY |
 | `phone_info` | phone | оператор/регион/тип (офлайн phonenumbers) | — ✅ |
@@ -92,9 +94,9 @@ $env:USERNAME_DEEP=1; python enrich.py username johndoe   # PowerShell
 🇺🇦 **Украина:** `opendatabot` расширить (CourtService/PenaltyService/RealEstateService по ключу);
 `youcontrol` (YouScore API, по ключу).
 **Нейтральные (которых нет, приоритет по flowsint):** `domain.ssl/whois_history`,
-`ip.ports` (Shodan), `username.maigret` (глубже sweep), `phone.carrier`,
-`email.leaks` (HIBP, свои/авторизованные), `crypto`, `ioc` (VT/AbuseIPDB/GreyNoise),
-`typosquat` (dnstwist), `archive_page` (Playwright/Wayback).
+`username.maigret` (глубже sweep), `phone.carrier`,
+`crypto`, `ioc` (VT/AbuseIPDB/GreyNoise), `archive_page` (Playwright/Wayback).
+✅ Реализованы: `ip.ports` (Shodan InternetDB), `typosquat` (свой генератор + DNS).
 
 > Принцип: пассивные источники по умолчанию; ключи и .env — вне репозитория;
 > результаты складывай в `cases/<slug>/data/`. Полный список flowsint-энричеров как
