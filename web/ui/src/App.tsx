@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { detect, type Guess } from "@/lib/detect";
 import { enrich, startJob, streamJob, type EnrichResult, type Finding } from "@/lib/api";
 import { suggest, type Suggestion } from "@/lib/suggest";
+import ToolsView from "@/ToolsView";
 
 const NAV = [
   { id: "search", label: "Поиск" },
@@ -39,6 +40,7 @@ export default function App() {
   const [result, setResult] = useState<EnrichResult | null>(null);
   const [progress, setProgress] = useState<{ checked: number; total: number; found: number; mode?: string } | null>(null);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [view, setView] = useState("search");
 
   const guesses = useMemo<Guess[]>(() => detect(query), [query]);
   const suggestions: Suggestion[] = useMemo(() => (result ? suggest(result) : []), [result]);
@@ -101,7 +103,7 @@ export default function App() {
           <span style={{ fontSize: 14, fontWeight: 600 }}>Claude OSINT</span>
         </div>
         {NAV.map((n) => (
-          <div key={n.id} style={{ padding: "8px 10px", borderRadius: "var(--radius)", fontSize: 13, color: n.id === "search" ? "var(--accent)" : "var(--text-secondary)", background: n.id === "search" ? "var(--accent-bg)" : "transparent", cursor: "pointer" }}>
+          <div key={n.id} onClick={() => setView(n.id)} style={{ padding: "8px 10px", borderRadius: "var(--radius)", fontSize: 13, color: n.id === view ? "var(--accent)" : "var(--text-secondary)", background: n.id === view ? "var(--accent-bg)" : "transparent", cursor: "pointer" }}>
             {n.label}
           </div>
         ))}
@@ -111,35 +113,48 @@ export default function App() {
       </aside>
 
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "auto" }}>
-        <header style={{ position: "sticky", top: 0, background: "var(--surface-0)", borderBottom: "1px solid var(--border)", padding: 14, zIndex: 2 }}>
-          <form onSubmit={onSubmit} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, background: "var(--surface-1)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "8px 12px" }}>
-              <span style={{ color: "var(--text-muted)" }}>⌕</span>
-              <input
-                value={query}
-                onChange={(e) => { setQuery(e.target.value); setActive(0); }}
-                placeholder="Email, домен, IP, телефон, ник, ЄДРПОУ/ИНН, ФИО…"
-                style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--text-primary)", fontSize: 14 }}
-              />
-              {guesses.slice(0, 3).map((g, i) => (
-                <button type="button" key={g.label + i} onClick={() => setActive(i)}
-                  style={{ fontSize: 11, padding: "3px 9px", borderRadius: 20, border: "none", cursor: "pointer",
-                    background: i === active ? "var(--accent-bg)" : "var(--surface-2)",
-                    color: i === active ? "var(--accent)" : "var(--text-secondary)" }}>
-                  {i === 0 ? "авто: " : ""}{g.label}
-                </button>
-              ))}
+        <header style={{ position: "sticky", top: 0, background: "var(--surface-0)", borderBottom: "1px solid var(--border)", padding: 14, zIndex: 2, display: "flex", gap: 8, alignItems: "center" }}>
+          {view === "search" ? (
+            <form onSubmit={onSubmit} style={{ flex: 1, display: "flex", gap: 8, alignItems: "center" }}>
+              <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, background: "var(--surface-1)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "8px 12px" }}>
+                <span style={{ color: "var(--text-muted)" }}>⌕</span>
+                <input
+                  value={query}
+                  onChange={(e) => { setQuery(e.target.value); setActive(0); }}
+                  placeholder="Email, домен, IP, телефон, ник, ЄДРПОУ/ИНН, ФИО…"
+                  style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--text-primary)", fontSize: 14 }}
+                />
+                {guesses.slice(0, 3).map((g, i) => (
+                  <button type="button" key={g.label + i} onClick={() => setActive(i)}
+                    style={{ fontSize: 11, padding: "3px 9px", borderRadius: 20, border: "none", cursor: "pointer",
+                      background: i === active ? "var(--accent-bg)" : "var(--surface-2)",
+                      color: i === active ? "var(--accent)" : "var(--text-secondary)" }}>
+                    {i === 0 ? "авто: " : ""}{g.label}
+                  </button>
+                ))}
+              </div>
+              <button type="submit" disabled={loading || !query.trim()}
+                style={{ padding: "9px 16px", borderRadius: "var(--radius)", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, background: "var(--accent)", color: "#fff", opacity: loading || !query.trim() ? 0.5 : 1 }}>
+                {loading ? "…" : "Обогатить"}
+              </button>
+            </form>
+          ) : (
+            <div style={{ flex: 1, fontSize: 14, color: "var(--text-secondary)" }}>
+              {NAV.find((n) => n.id === view)?.label}
             </div>
-            <button type="submit" disabled={loading || !query.trim()}
-              style={{ padding: "9px 16px", borderRadius: "var(--radius)", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, background: "var(--accent)", color: "#fff", opacity: loading || !query.trim() ? 0.5 : 1 }}>
-              {loading ? "…" : "Обогатить"}
-            </button>
-            <button type="button" onClick={toggleTheme} title="Тема"
-              style={{ padding: "9px 11px", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface-1)", color: "var(--text-secondary)", cursor: "pointer" }}>◐</button>
-          </form>
+          )}
+          <button type="button" onClick={toggleTheme} title="Тема"
+            style={{ padding: "9px 11px", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface-1)", color: "var(--text-secondary)", cursor: "pointer" }}>◐</button>
         </header>
 
-        <main style={{ padding: 16, flex: 1 }}>
+        {view === "tools" && <ToolsView />}
+        {view !== "search" && view !== "tools" && (
+          <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)", fontSize: 14 }}>
+            Раздел «{NAV.find((n) => n.id === view)?.label}» — скоро.
+          </div>
+        )}
+
+        <main style={{ padding: 16, flex: 1, display: view === "search" ? "block" : "none" }}>
           {error && (
             <div style={{ padding: 12, borderRadius: "var(--radius)", background: "var(--danger-bg)", color: "var(--danger)", fontSize: 13, marginBottom: 14 }}>
               Ошибка: {error}

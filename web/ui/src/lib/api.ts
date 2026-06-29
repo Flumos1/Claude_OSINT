@@ -42,6 +42,33 @@ export async function enrich(
   return r.json();
 }
 
+export interface ToolItem {
+  name: string;
+  url: string;
+  desc: string;
+  category: string;
+  flag: string | null;
+}
+
+export interface ToolsResponse {
+  total: number;
+  all_total: number;
+  flagged_total: number;
+  categories: { name: string; count: number }[];
+  items: ToolItem[];
+}
+
+export async function fetchTools(p: { q?: string; category?: string; flagged?: boolean; limit?: number }): Promise<ToolsResponse> {
+  const u = new URLSearchParams();
+  if (p.q) u.set("q", p.q);
+  if (p.category) u.set("category", p.category);
+  if (p.flagged) u.set("flagged", "true");
+  u.set("limit", String(p.limit ?? 60));
+  const r = await fetch(`/api/tools?${u.toString()}`);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
 export interface JobEvent {
   event: "start" | "progress" | "done" | "error";
   total?: number;

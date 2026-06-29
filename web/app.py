@@ -114,6 +114,72 @@ def api_enrich(req: EnrichReq):
     return enrich_run(req.type, req.value.strip(), req.country)
 
 
+# --- Каталог инструментов (индекс awesome-osint, 1400+) ---------------------
+
+# Эвристические этик-флаги: наличие в индексе ≠ одобрение (см. ethics-legal.md).
+_CAUTION_KW = {
+    "деанон": "деанонимизация", "deanon": "деанонимизация", "doxx": "доксинг",
+    "dox ": "доксинг", "докс": "доксинг", "пробив": "«пробив» по закрытым данным",
+    "stealer": "кража учётных данных", "grabber": "грабер токенов",
+    "ghosttrack": "трекинг лица", "phonetrack": "трекинг телефона",
+    "geolocation track": "трекинг локации", "ip logger": "скрытый логгер IP",
+    "bypass": "обход защиты/ToS", "captcha solv": "обход капчи",
+    "anti-bot": "обход анти-бота", "combolist": "комболисты (слитые пары)",
+    "leaked database": "торговля слитыми базами",
+}
+
+_TOOLS_CACHE: dict | None = None
+
+
+def _load_tools() -> dict:
+    global _TOOLS_CACHE
+    if _TOOLS_CACHE is not None:
+        return _TOOLS_CACHE
+    ti = KNOWLEDGE / "tools-index.json"
+    items: list[dict] = []
+    cats: dict[str, int] = {}
+    if ti.exists():
+        data = json.loads(ti.read_text(encoding="utf-8"))
+        for s in data.get("sections", []):
+            cat = s.get("category", "—")
+            for t in s.get("tools", []):
+                hay = f"{t.get('name','')} {t.get('desc','')}".lower()
+                flag = None
+                for kw, reason in _CAUTION_KW.items():
+                    if kw in hay:
+                        flag = reason
+                        break
+                items.append({"name": t.get("name", ""), "url": t.get("url", ""),
+                              "desc": t.get("desc", ""), "category": cat, "flag": flag})
+                cats[cat] = cats.get(cat, 0) + 1
+    _TOOLS_CACHE = {"items": items, "categories": cats}
+    return _TOOLS_CACHE
+
+
+@app.get("/api/tools")
+def api_tools(q: str = "", category: str = "", flagged: bool = False,
+              limit: int = 60, offset: int = 0):
+    data = _load_tools()
+    items = data["items"]
+    ql = q.strip().lower()
+    if ql:
+        items = [t for t in items if ql in t["name"].lower() or ql in t["desc"].lower()]
+    if category:
+        items = [t for t in items if t["category"] == category]
+    if flagged:
+        items = [t for t in items if t["flag"]]
+    total = len(items)
+    cats = sorted(({"name": c, "count": n} for c, n in data["categories"].items()),
+                  key=lambda x: -x["count"])
+    return {
+        "total": total,
+        "all_total": len(data["items"]),
+        "flagged_total": sum(1 for t in data["items"] if t["flag"]),
+        "categories": cats,
+        "items": items[offset:offset + limit],
+    }
+
+
 class JobReq(BaseModel):
     kind: str          # username_deep | username_fast
     value: str
