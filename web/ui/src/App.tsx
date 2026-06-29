@@ -6,6 +6,7 @@ import ToolsView from "@/ToolsView";
 import CasesView from "@/CasesView";
 import PersonView from "@/PersonView";
 import UsersView from "@/UsersView";
+import SettingsView from "@/SettingsView";
 import Graph from "@/Graph";
 import { listCases, createCase, saveToCase, getMe, logout, type Me } from "@/lib/api";
 
@@ -15,6 +16,7 @@ const NAV = [
   { id: "person", label: "Поиск ФЛ" },
   { id: "tools", label: "Инструменты" },
   { id: "cases", label: "Кейсы" },
+  { id: "settings", label: "Настройки" },
 ];
 
 function gradeTone(c: string): "success" | "warning" | "danger" | "muted" {
@@ -263,6 +265,7 @@ export default function App() {
         )}
         {view === "person" && <PersonView />}
         {view === "users" && <UsersView />}
+        {view === "settings" && <SettingsView />}
 
         <main style={{ padding: 16, flex: 1, display: view === "search" ? "block" : "none" }}>
           {error && (

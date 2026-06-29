@@ -162,6 +162,14 @@ export async function personReport(req: PersonReq): Promise<string> {
   return (await r.json()).markdown;
 }
 
+export interface KeyStatus { name: string; set: boolean; desc: string; tier: "free" | "paid" }
+
+export async function fetchKeys(): Promise<KeyStatus[]> {
+  const r = await fetch("/api/keys");
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
 export interface CuratedTool {
   id: string; name: string; category: string; url: string;
   method: string; install: string; note?: string;

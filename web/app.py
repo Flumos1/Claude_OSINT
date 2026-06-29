@@ -287,6 +287,28 @@ def api_tools(q: str = "", category: str = "", flagged: bool = False,
     }
 
 
+# Статус API-ключей (значения НЕ раскрываются — только задан/нет).
+_KEY_INFO = [
+    ("VIRUSTOTAL_API_KEY", "IOC: репутация IP/домена/URL (VirusTotal)", "free"),
+    ("ABUSEIPDB_API_KEY", "IOC: репутация IP (AbuseIPDB)", "free"),
+    ("SECURITYTRAILS_API_KEY", "История домена, поддомены, DNS", "free"),
+    ("URLSCAN_API_KEY", "Сканы страниц (urlscan.io)", "free"),
+    ("OPENSANCTIONS_API_KEY", "Санкции/PEP live-поиск", "free"),
+    ("NUMVERIFY_API_KEY", "Телефон: оператор/валидация", "free"),
+    ("HIBP_API_KEY", "Email в утечках (Have I Been Pwned)", "paid"),
+    ("SHODAN_API_KEY", "Полные данные хоста (сверх InternetDB)", "paid"),
+    ("FSSP_API_KEY", "🇷🇺 исполнительные производства", "paid"),
+    ("ODB_API_KEY", "🇺🇦 Opendatabot (карточки компаний)", "paid"),
+    ("YOUCONTROL_API_KEY", "🇺🇦 YouControl (связи/реестры)", "paid"),
+]
+
+
+@app.get("/api/keys")
+def api_keys():
+    return [{"name": n, "set": bool(os.getenv(n, "").strip()), "desc": d, "tier": t}
+            for n, d, t in _KEY_INFO]
+
+
 @app.get("/api/tools/curated")
 def api_tools_curated():
     f = KNOWLEDGE / "curated-tools.json"
