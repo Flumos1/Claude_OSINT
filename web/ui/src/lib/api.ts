@@ -42,6 +42,45 @@ export async function enrich(
   return r.json();
 }
 
+export interface CaseSummary { slug: string; brief: string; saves: number }
+export interface CaseDetail extends EnrichResult { slug: string; saves: number }
+
+export async function listCases(): Promise<CaseSummary[]> {
+  const r = await fetch("/api/cases");
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+export async function createCase(slug: string, title = "", basis = ""): Promise<{ slug: string }> {
+  const r = await fetch("/api/cases", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ slug, title, basis }),
+  });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || `HTTP ${r.status}`);
+  return r.json();
+}
+
+export async function saveToCase(slug: string, result: EnrichResult): Promise<{ saves: number }> {
+  const r = await fetch(`/api/cases/${slug}/save`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ result }),
+  });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || `HTTP ${r.status}`);
+  return r.json();
+}
+
+export async function getCase(slug: string): Promise<CaseDetail> {
+  const r = await fetch(`/api/cases/${slug}`);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+export async function getCaseReport(slug: string): Promise<string> {
+  const r = await fetch(`/api/cases/${slug}/report`);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return (await r.json()).markdown;
+}
+
 export interface ToolItem {
   name: string;
   url: string;

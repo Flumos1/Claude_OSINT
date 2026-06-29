@@ -34,6 +34,7 @@ from enrich import run as enrich_run  # noqa: E402
 from enrichers.base import ENTITY_TYPES, REGISTRY  # noqa: E402
 from person_search import dossier_to_markdown, search_person  # noqa: E402
 import jobs as jobq  # noqa: E402
+import cases_store as cstore  # noqa: E402
 
 try:
     import markdown as md
@@ -266,16 +267,51 @@ def api_skills():
 
 @app.get("/api/cases")
 def api_cases():
-    out = []
-    for d in sorted(CASES.glob("*")):
-        if not d.is_dir() or d.name.startswith("_"):
-            continue
-        brief = ""
-        bf = d / "00-brief.md"
-        if bf.exists():
-            brief = bf.read_text(encoding="utf-8")[:400]
-        out.append({"slug": d.name, "brief": brief})
-    return out
+    return cstore.list_cases(CASES)
+
+
+class CaseCreateReq(BaseModel):
+    slug: str
+    title: str = ""
+    basis: str = ""
+
+
+@app.post("/api/cases")
+def api_case_create(req: CaseCreateReq):
+    try:
+        return cstore.create_case(CASES, CASES / "_TEMPLATE", req.slug, req.title, req.basis)
+    except (ValueError, FileExistsError) as e:
+        raise HTTPException(400, str(e))
+
+
+class CaseSaveReq(BaseModel):
+    result: dict
+
+
+@app.post("/api/cases/{slug}/save")
+def api_case_save(slug: str, req: CaseSaveReq):
+    try:
+        return cstore.save_result(CASES, slug, req.result)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+
+
+@app.get("/api/cases/{slug}")
+def api_case_detail(slug: str):
+    try:
+        return cstore.aggregate(CASES, slug)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.get("/api/cases/{slug}/report")
+def api_case_report(slug: str):
+    try:
+        return JSONResponse({"markdown": cstore.report_markdown(CASES, slug)})
+    except ValueError as e:
+        raise HTTPException(400, str(e))
 
 
 @app.get("/")

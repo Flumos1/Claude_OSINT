@@ -9,7 +9,7 @@ export interface Suggestion {
   desc: string;
   tone: "accent" | "neutral";
   pivot?: { type: string; value: string; country?: string };
-  action?: "deep"; // спец-действие: запустить асинхронный deep-скан
+  action?: "deep" | "save"; // спец-действия: deep-скан / сохранить в кейс
 }
 
 function lowConfidence(nodes: GraphNode[]): number {
@@ -53,6 +53,6 @@ export function suggest(res: EnrichResult): Suggestion[] {
   }
 
   // Всегда — сохранить в кейс
-  out.push({ title: "Сохранить в кейс", desc: "С provenance, источником и датой сбора", tone: "neutral" });
+  out.push({ title: "Сохранить в кейс", desc: "С provenance, источником и датой сбора", tone: "neutral", action: "save" });
   return out;
 }

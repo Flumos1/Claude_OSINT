@@ -44,6 +44,16 @@ TOOL_RE = re.compile(r"^\s*[*\-]\s+\[(?P<name>[^\]]+)\]\((?P<url>[^)]+)\)\s*(?:[
 
 SKIP_HEADERS = {"table of contents", "contents", "license", "contributing", "credits"}
 
+# Удаляет ведущие не-буквенные символы (эмодзи, якорные стрелки ↑, остатки [](),
+# пунктуацию) перед сравнением со SKIP_HEADERS, чтобы заголовки вида
+# "🔝 Table of Contents" или "↑ Contents" корректно отбрасывались.
+def _normalize_header(title):
+    # срезаем markdown-ссылки целиком: [text](url) -> text
+    title = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", title)
+    # убираем ведущие символы, не являющиеся буквами/цифрами (эмодзи, ↑, скобки, пунктуация)
+    title = re.sub(r"^[\W_]+", "", title, flags=re.UNICODE)
+    return title.strip().lower()
+
 
 def fetch(url):
     r = requests.get(url, headers={"User-Agent": "osint-tools-index/1.0"}, timeout=30)

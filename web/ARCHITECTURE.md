@@ -59,7 +59,9 @@
    (`/api/jobs`, `/api/jobs/{id}/stream`); прогресс-бар в UI; `stream_username` в энричере.
 3. ✅ **Каталог инструментов 1400+:** `/api/tools` (поиск/категория/флаги) + экран
    `ToolsView` с эвристическими этик-флагами по `tools-index.json`.
-4. **Менеджмент кейсов + сквозной граф + экспорт** (MD/DOCX/PDF через скилы).
+4. ✅ **Менеджмент кейсов + граф + экспорт:** `web/cases_store.py` (create/save/
+   aggregate/report) + `/api/cases*`; `CasesView` + `Graph` (vis-network); подсказка
+   «Сохранить в кейс» пишет результат с provenance; экспорт отчёта в Markdown.
 5. **Deploy-пакет:** auth, мульти-юзер, Docker, reverse-proxy.
 
 ## Зависимости (требуется установить)

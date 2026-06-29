@@ -3,6 +3,9 @@ import { detect, type Guess } from "@/lib/detect";
 import { enrich, startJob, streamJob, type EnrichResult, type Finding } from "@/lib/api";
 import { suggest, type Suggestion } from "@/lib/suggest";
 import ToolsView from "@/ToolsView";
+import CasesView from "@/CasesView";
+import Graph from "@/Graph";
+import { listCases, createCase, saveToCase } from "@/lib/api";
 
 const NAV = [
   { id: "search", label: "Поиск" },
@@ -84,6 +87,24 @@ export default function App() {
     }
   }
 
+  async function saveCurrent() {
+    if (!result) return;
+    const existing = await listCases().catch(() => []);
+    const list = existing.map((c) => c.slug).join(", ");
+    const slug = window.prompt(
+      `В какой кейс сохранить?${list ? "\nСуществующие: " + list : ""}\nВведите slug (новый будет создан):`,
+      existing[0]?.slug || "",
+    );
+    if (!slug) return;
+    try {
+      if (!existing.some((c) => c.slug === slug)) await createCase(slug);
+      const r = await saveToCase(slug, result);
+      window.alert(`Сохранено в «${slug}» (всего сохранений: ${r.saves}).`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }
+
   function onSubmit(e: FormEvent) {
     e.preventDefault();
     const g = guesses[active] ?? guesses[0];
@@ -148,9 +169,24 @@ export default function App() {
         </header>
 
         {view === "tools" && <ToolsView />}
-        {view !== "search" && view !== "tools" && (
+        {view === "cases" && <CasesView />}
+        {view === "graph" && (
+          result && result.nodes.length > 0 ? (
+            <div style={{ padding: 16 }}>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 8 }}>
+                Граф · {result.input.type}: <span className="mono">{result.input.value}</span>
+              </div>
+              <Graph nodes={result.nodes} edges={result.edges} height={520} />
+            </div>
+          ) : (
+            <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)", fontSize: 14 }}>
+              Сначала выполните поиск в разделе «Поиск».
+            </div>
+          )
+        )}
+        {view === "person" && (
           <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)", fontSize: 14 }}>
-            Раздел «{NAV.find((n) => n.id === view)?.label}» — скоро.
+            Раздел «Поиск ФЛ» — скоро.
           </div>
         )}
 
@@ -205,6 +241,7 @@ export default function App() {
                     {suggestions.map((s, i) => (
                       <div key={i} onClick={() => {
                         if (s.action === "deep") runDeep(result.input.value);
+                        else if (s.action === "save") saveCurrent();
                         else if (s.pivot) run(s.pivot.type, s.pivot.value, s.pivot.country);
                       }}
                         style={{ marginBottom: 8, padding: "11px 13px", borderRadius: 12, cursor: s.pivot || s.action ? "pointer" : "default",
