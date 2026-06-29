@@ -1,8 +1,8 @@
 # Индекс инструментов (awesome-osint)
 
 > Автогенерация из [https://github.com/jivoi/awesome-osint](https://github.com/jivoi/awesome-osint) — НЕ редактировать вручную.
-> Обновить: `python scripts/fetch_awesome_osint.py`. Сгенерировано: 2026-06-10T15:06:19.649433+00:00.
-> Всего инструментов: **1467** в **60** категориях.
+> Обновить: `python scripts/fetch_awesome_osint.py`. Сгенерировано: 2026-06-29T12:22:08.276854+00:00.
+> Всего инструментов: **1395** в **59** категориях.
 > Это широкий международный каталог; реестры по странам — в [sources/](sources/).
 >
 > ⚠️ Каталог импортирован «как есть» и содержит инструменты, которые могут выходить
@@ -70,88 +70,11 @@
 - [Visual Search and Clustering Search Engines](#visual-search-and-clustering-search-engines)
 - [Web History and Website Capture](#web-history-and-website-capture)
 - [Web Monitoring](#web-monitoring)
-- [📖 Table of Contents](#table-of-contents)
-
-
-## 📖 Table of Contents
-
-- [General Search](#-general-search)
-- [Google Dorks](#-google-dorks-tools)
-- [Main National Search Engines](#-main-national-search-engines)
-- [Meta Search](#-meta-search)
-- [Privacy Focused Search Engines](#-privacy-focused-search-engines)
-- [Data Breach Search Engines](#-databreach-search-engines)
-- [Specialty Search Engines](#-specialty-search-engines)
-- [Dark Web Search Engines](#-dark-web-search-engines)
-- [Visual Search and Clustering Search Engines](#-visual-search-and-clustering-search-engines)
-- [Similar Sites Search](#-similar-sites-search)
-- [Document and Slides Search](#-document-and-slides-search)
-- [Threat Actor Search](#-threat-actor-search)
-- [Live Cyber Threat Maps](#-live-cyber-threat-maps)
-- [File Search](#-file-search)
-- [Pastebins](#-pastebins)
-- [Code Search](#-code-search)
-- [Major Social Networks](#-major-social-networks)
-- [Real-Time Search, Social Media Search, and General Social Media Tools](#-real-time-search-social-media-search-and-general-social-media-tools)
-- [Social Media Tools](#social-media-tools)
-- [Twitter](#-twitter)
-- [Facebook](#-facebook)
-- [Instagram](#-instagram)
-- [Pinterest](#-pinterest)
-- [Reddit](#-reddit)
-- [VKontakte](#-vkontakte)
-- [Tumblr](#-tumblr)
-- [LinkedIn](#-linkedin)
-- [Telegram](#-telegram)
-- [Steam](#-steam)
-- [GitHub](#-github)
-- [Blog Search](#-blog-search)
-- [Forums and Discussion Boards Search](#-forums-and-discussion-boards-search)
-- [Username Check](#-username-check)
-- [People Investigations](#-people-investigations)
-- [Email Search / Email Check](#-email-search--email-check)
-- [Phone Number Research](#-phone-number-research)
-- [Vehicle / Automobile Research](#-vehicle--automobile-research)
-- [Expert Search](#-expert-search)
-- [Company Research](#-company-research)
-- [Job Search Resources](#-job-search-resources)
-- [Q&A Sites](#-qa-sites)
-- [Domain and IP Research](#-domain-and-ip-research)
-- [Keywords Discovery and Research](#-keywords-discovery-and-research)
-- [Web History and Website Capture](#-web-history-and-website-capture)
-- [Language Tools](#-language-tools)
-- [Image Search](#-image-search)
-- [Image Analysis](#-image-analysis)
-- [Video Search and Other Video Tools](#-video-search-and-other-video-tools)
-- [Academic Resources and Grey Literature](#-academic-resources-and-grey-literature)
-- [Geospatial Research and Mapping Tools](#-geospatial-research-and-mapping-tools)
-- [News](#-news)
-- [News Digest and Discovery Tools](#-news-digest-and-discovery-tools)
-- [Fact Checking](#-fact-checking)
-- [Data and Statistics](#-data-and-statistics)
-- [Web Monitoring](#-web-monitoring)
-- [Browsers](#-browsers)
-- [Offline Browsing](#-offline-browsing)
-- [VPN Services](#-vpn-services)
-- [Infographics and Data Visualization](#-infographics-and-data-visualization)
-- [Social Network Analysis](#-social-network-analysis)
-- [Privacy and Encryption Tools](#-privacy-and-encryption-tools)
-- [DNS](#-dns)
-- [Maritime](#-maritime)
-- [Other Tools](#-other-tools)
-- [Threat Intelligence](#-threat-intelligence)
-- [Gaming Platforms](#-gaming-platforms)
-- [Music Streaming Services](#-music-streaming-services)
-- [OSINT Videos](#-osint-videos)
-- [OSINT Blogs](#-osint-blogs)
-- [Other Resources](#-other-resources)
-- [Related Awesome Lists](#-related-awesome-lists)
 
 
 ## General Search
 
 - [Aol](https://search.aol.com) — The web for America.
-- [Ask](https://www.ask.com) — Ask something and get a answer.
 - [Bing](https://www.bing.com) — Microsoft´s search engine.
 - [Brave](https://search.brave.com) — a private, independent, and transparent search engine.
 - [Goodsearch](https://www.goodsearch.com) — a search engine for shopping deals online.
@@ -169,7 +92,7 @@
 
 ## Google Dorks Tools
 
-- [DorkEye](https://github.com/xPloits3c/DorkEye) — DorkEye is a Python-based OSINT framework for automated Google Dorking. It includes an interactive wizard for guided configuration, a dork generator to build and customize queries, a multi-agent analysis pipeline with SQLi detection, secrets scanning, security analysis, and advanced HTML report export with selective result saving — allowing accurate, targeted inclusion of findings.
+- [AtDork](https://github.com/amnottdevv/atdork) — Professional OSINT dorking tool featuring adaptive delay, circuit breaker, and automatic backend fallback to avoid IP bans and rate limits.
 - [DorkGenius](https://dorkgenius.com/) — DorkGenius is the ultimate tool for generating custom search queries for Google, Bing, and DuckDuckGo. - Our cutting-edge app uses the power of AI to help you create advanced search queries that can find exactly what you're looking for on the web.
 - [DorkGPT](https://www.dorkgpt.com/) — Generate Google Dorks with AI.
 - [Google Hacking Database (GHDB)](https://www.exploit-db.com/google-hacking-database) — The GHDB is an index of search queries (we call them dorks) used to find publicly available information, intended for pentesters and security researchers.
@@ -274,7 +197,6 @@
 - [ODIN](https://search.odin.io/) — Used to search for Hosts, CVEs & Exposed Buckets/Files and shows a website is vulnerable or not. 10 Free Searches Per Day.
 - [OCCRP Aleph](https://aleph.occrp.org/)
 - [ONYPHE](https://search.onyphe.io/) — OSINT engine indexing exposed assets and services across the internet.
-- [Search Abuseipdb](https://github.com/oseasfr/search-abuseipdb) — Tool to query IPs, ranges and ASN blocks in AbuseIPDB via API with CIDR notation.
 - [Shadowserver](https://dashboard.shadowserver.org/) — Dashboard with global statistics on cyber threats collected by the Shadowserver Foundation.
 - [Shodan](https://www.shodan.io/) — Shodan is a search engine for the IOT(Internet of Things) that allows you to search variety of servers that are connected to the internet using various searching filters.
 - [SikkerAPI](https://www.sikkerapi.com/) — SikkerAPI is a free IP and threat intelligence provider, that publishes IP reputation scores, behavioral data and full attack sessions across 16+ different protocols.
@@ -740,6 +662,7 @@
 - [InfoTracer](https://infotracer.com/) — Search for people. (Searches are paid)
 - [Judyrecords](https://www.judyrecords.com/) — Free. Nationwide search of 400 million+ United States court cases.
 - [Kompass](http://www.kompass.com) — Business directory and search.
+- [LERS Portal Directory (Ministry of Cyber Affairs)](https://ministryofcyberaffairs.com/lers) — Directory of platform law-enforcement data-request (LERS) portals (WhatsApp, Google, Apple, Telegram, TikTok, Binance) with eligibility and submission steps for authorised investigators.
 - [Mugshots](https://mugshots.com/)
 - [OpenSanctions](https://www.opensanctions.org/search/) — Information on sanctions and public office holders.
 - [PeekYou](https://www.peekyou.com/) — PeekYou offers the ability to search for people with checks done against more sites. Can check for arrest records as well.
@@ -972,6 +895,7 @@
 - [Hudson Rock](https://www.hudsonrock.com/threat-intelligence-cybercrime-tools) — is a free cybercrime intelligence toolkit to check exposure in Infostealer malware infection.
 - [Hybrid Analysis](https://www.hybrid-analysis.com) — Online service for detailed and free analysis of suspicious files and URLs.
 - [HypeStat](https://www.hypestat.com)
+- [IP.THC.ORG](https://ip.thc.org/) — Unlimited Reverse DNS, Subdomain and Reverse CNAME lookups, also provides JSON APIs.
 - [Icann Lookup](https://lookup.icann.org/en/lookup) — The site allows you to look up domain registration information (WHOIS) on the internet
 - [Infosniper](http://www.infosniper.net)
 - [isMalicious](https://ismalicious.com) — Threat intelligence platform aggregating malicious IP and domain data from multiple security feeds with real-time reputation scoring and threat categorization.
@@ -984,6 +908,7 @@
 - [IP Location](https://www.iplocation.net) — is used for mapping of an IP address or MAC address to the real-world geographic location of an Internet-connected computing or a mobile device.
 - [IP Location.io](https://iplocation.io) — IPLocation.io allows you to check the location of an IP for free
 - [IPFingerprints](http://www.ipfingerprints.com) — is used to find the approximate geographic location of an IP address along with some other useful information including ISP, TimeZone, Area Code, State.
+- [IPOK](https://ipok.io) — Free, no-login IP reputation lookup that aggregates up to 8 risk sources, flags residential vs datacenter, and profiles /24 C-block neighbors. Also offers a CLI and a Chrome extension.
 - [IPVoid](http://www.ipvoid.com) — IP address toolset.
 - [ISP.Tools](https://www.isp.tools) — Is a free platform offering network diagnostic tools (ping, traceroute, MTR, DNS, WHOIS, HTTP, etc.) tailored for ISPs and infrastructure professionals.
 - [Kloth](http://www.kloth.net/services)
@@ -1470,7 +1395,6 @@
 - [Gnu Icecat](https://icecatbrowser.org/)
 - [Edge](https://www.microsoft.com/en-us/windows/microsoft-edge/microsoft-edge)
 - [Firefox](https://www.mozilla.org)
-- [firefox-stealth](https://github.com/feder-cr/firefox-stealth) — C++ source patches that harden Firefox against browser fingerprinting at the engine level (Canvas, WebGL, Audio, Fonts, WebRTC, Timezone). MPL-2.0; build from source or grab the pre-built binary.
 - [LibreWolf](https://librewolf.net) — Privacy-focused Firefox fork with enhanced security defaults.
 - [Maxthon](http://www.maxthon.com)
 - [Mullvad Browser](https://mullvad.net/en/browser) — Privacy-focused browser developed in collaboration with Tor Project.
@@ -1661,6 +1585,7 @@
 - [Columbus Project](https://github.com/elmasy-com/columbus) — Columbus Project is an advanced subdomain discovery service with fast, powerful and easy to use API.
 - [dnsx](https://github.com/projectdiscovery/dnsx) — A fast and multi-purpose DNS toolkit from ProjectDiscovery for running DNS probes, resolving records and filtering DNS responses.
 - [Merklemap](https://www.merklemap.com/) — Discover and enumerate all subdomains associated with a website, including those not publicly advertised. Works by ingesting certificate transparency logs.
+- [Subhunt](https://github.com/ahmadouniass/Subdomains-finder-subhunt) — Multi-source subdomain enumeration tool querying crt.sh Certificate Transparency logs, HackerTarget, and RapidDNS. Features HTTP/HTTPS liveness probing with status codes, alive/dead filtering, multi-format export (TXT/JSON/CSV), and a full CLI.
 
 
 ## Maritime
@@ -1680,7 +1605,6 @@
 - [CrowdSec](https://github.com/crowdsecurity/crowdsec) — An open source, free, and collaborative IPS/IDS software written in Go, able to analyze visitor behavior & provide an adapted response to all kinds of attacks.
 - [Datasploit](https://github.com/DataSploit/datasploit) — Tool to perform various OSINT techniques on usernames, emails addresses, and domains.
 - [Dehashed CLI](https://github.com/hmaverickadams/DeHashed-API-Tool) — Command-line tool for searching breach databases via DeHashed API.
-- [Discoshell](https://github.com/foozzi/discoshell) — A simple discovery script that uses popular tools like subfinder, amass, puredns, alterx, massdns and others
 - [Dorkgpt](https://www.dorkgpt.com) — Artificial intelligence that generates advanced search queries to find specific or hidden information on the internet.
 - [DuckDuckGo URL scraper](https://github.com/its0x08/duckduckgo) — A simple DuckDuckGo URL scraper.
 - [FaviconHash](https://kriztalz.sh/favicon-hash/) — Generate favicon hashes of a website for use on Shodan, VirusTotal, Censys, ZoomEye or FOFA.
@@ -1705,7 +1629,6 @@
 - [OSINT.SH](https://osint.sh/) — Information Gathering Toolset.
 - [OsintStalker](https://github.com/milo2012/osintstalker) — Python script for Facebook and geolocation OSINT.
 - [Outwit](http://www.outwit.com) — Find, grab and organize all kinds of data and media from online sources.
-- [PassiveRecon](https://github.com/rudra496/PassiveRecon-Aggregator) — Passive asset discovery tool for mapping external IT perimeters. Aggregates Shodan, Crt.sh and public APIs.
 - [PGPKeyAnalyser](https://kriztalz.sh/pgp-key-analyser/) — Analyse and view the details of a PGP key online without having to download the asc file.
 - [Photon](https://github.com/s0md3v/Photon) — Crawler designed for OSINT
 - [PRISM](https://github.com/NovaCode37/Prism-platform) — Self-hosted all-in-one OSINT platform that scans a domain, IP, email, phone, or username across 22+ modules and returns threat intel, breach data, subdomains, an OPSEC score, entity graph, GeoIP map, and HTML/PDF reports. [Live demo](https://getprism.su).

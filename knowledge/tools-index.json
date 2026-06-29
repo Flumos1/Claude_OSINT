@@ -1,371 +1,10 @@
 {
-  "generated_at": "2026-06-10T15:06:19.649433+00:00",
+  "generated_at": "2026-06-29T12:22:08.276854+00:00",
   "source": "https://raw.githubusercontent.com/jivoi/awesome-osint/master/README.md",
   "repo": "https://github.com/jivoi/awesome-osint",
-  "total_tools": 1467,
-  "categories": 60,
+  "total_tools": 1395,
+  "categories": 59,
   "sections": [
-    {
-      "category": "📖 Table of Contents",
-      "subcategory": null,
-      "tools": [
-        {
-          "name": "General Search",
-          "url": "#-general-search",
-          "desc": ""
-        },
-        {
-          "name": "Google Dorks",
-          "url": "#-google-dorks-tools",
-          "desc": ""
-        },
-        {
-          "name": "Main National Search Engines",
-          "url": "#-main-national-search-engines",
-          "desc": ""
-        },
-        {
-          "name": "Meta Search",
-          "url": "#-meta-search",
-          "desc": ""
-        },
-        {
-          "name": "Privacy Focused Search Engines",
-          "url": "#-privacy-focused-search-engines",
-          "desc": ""
-        },
-        {
-          "name": "Data Breach Search Engines",
-          "url": "#-databreach-search-engines",
-          "desc": ""
-        },
-        {
-          "name": "Specialty Search Engines",
-          "url": "#-specialty-search-engines",
-          "desc": ""
-        },
-        {
-          "name": "Dark Web Search Engines",
-          "url": "#-dark-web-search-engines",
-          "desc": ""
-        },
-        {
-          "name": "Visual Search and Clustering Search Engines",
-          "url": "#-visual-search-and-clustering-search-engines",
-          "desc": ""
-        },
-        {
-          "name": "Similar Sites Search",
-          "url": "#-similar-sites-search",
-          "desc": ""
-        },
-        {
-          "name": "Document and Slides Search",
-          "url": "#-document-and-slides-search",
-          "desc": ""
-        },
-        {
-          "name": "Threat Actor Search",
-          "url": "#-threat-actor-search",
-          "desc": ""
-        },
-        {
-          "name": "Live Cyber Threat Maps",
-          "url": "#-live-cyber-threat-maps",
-          "desc": ""
-        },
-        {
-          "name": "File Search",
-          "url": "#-file-search",
-          "desc": ""
-        },
-        {
-          "name": "Pastebins",
-          "url": "#-pastebins",
-          "desc": ""
-        },
-        {
-          "name": "Code Search",
-          "url": "#-code-search",
-          "desc": ""
-        },
-        {
-          "name": "Major Social Networks",
-          "url": "#-major-social-networks",
-          "desc": ""
-        },
-        {
-          "name": "Real-Time Search, Social Media Search, and General Social Media Tools",
-          "url": "#-real-time-search-social-media-search-and-general-social-media-tools",
-          "desc": ""
-        },
-        {
-          "name": "Social Media Tools",
-          "url": "#social-media-tools",
-          "desc": ""
-        },
-        {
-          "name": "Twitter",
-          "url": "#-twitter",
-          "desc": ""
-        },
-        {
-          "name": "Facebook",
-          "url": "#-facebook",
-          "desc": ""
-        },
-        {
-          "name": "Instagram",
-          "url": "#-instagram",
-          "desc": ""
-        },
-        {
-          "name": "Pinterest",
-          "url": "#-pinterest",
-          "desc": ""
-        },
-        {
-          "name": "Reddit",
-          "url": "#-reddit",
-          "desc": ""
-        },
-        {
-          "name": "VKontakte",
-          "url": "#-vkontakte",
-          "desc": ""
-        },
-        {
-          "name": "Tumblr",
-          "url": "#-tumblr",
-          "desc": ""
-        },
-        {
-          "name": "LinkedIn",
-          "url": "#-linkedin",
-          "desc": ""
-        },
-        {
-          "name": "Telegram",
-          "url": "#-telegram",
-          "desc": ""
-        },
-        {
-          "name": "Steam",
-          "url": "#-steam",
-          "desc": ""
-        },
-        {
-          "name": "GitHub",
-          "url": "#-github",
-          "desc": ""
-        },
-        {
-          "name": "Blog Search",
-          "url": "#-blog-search",
-          "desc": ""
-        },
-        {
-          "name": "Forums and Discussion Boards Search",
-          "url": "#-forums-and-discussion-boards-search",
-          "desc": ""
-        },
-        {
-          "name": "Username Check",
-          "url": "#-username-check",
-          "desc": ""
-        },
-        {
-          "name": "People Investigations",
-          "url": "#-people-investigations",
-          "desc": ""
-        },
-        {
-          "name": "Email Search / Email Check",
-          "url": "#-email-search--email-check",
-          "desc": ""
-        },
-        {
-          "name": "Phone Number Research",
-          "url": "#-phone-number-research",
-          "desc": ""
-        },
-        {
-          "name": "Vehicle / Automobile Research",
-          "url": "#-vehicle--automobile-research",
-          "desc": ""
-        },
-        {
-          "name": "Expert Search",
-          "url": "#-expert-search",
-          "desc": ""
-        },
-        {
-          "name": "Company Research",
-          "url": "#-company-research",
-          "desc": ""
-        },
-        {
-          "name": "Job Search Resources",
-          "url": "#-job-search-resources",
-          "desc": ""
-        },
-        {
-          "name": "Q&A Sites",
-          "url": "#-qa-sites",
-          "desc": ""
-        },
-        {
-          "name": "Domain and IP Research",
-          "url": "#-domain-and-ip-research",
-          "desc": ""
-        },
-        {
-          "name": "Keywords Discovery and Research",
-          "url": "#-keywords-discovery-and-research",
-          "desc": ""
-        },
-        {
-          "name": "Web History and Website Capture",
-          "url": "#-web-history-and-website-capture",
-          "desc": ""
-        },
-        {
-          "name": "Language Tools",
-          "url": "#-language-tools",
-          "desc": ""
-        },
-        {
-          "name": "Image Search",
-          "url": "#-image-search",
-          "desc": ""
-        },
-        {
-          "name": "Image Analysis",
-          "url": "#-image-analysis",
-          "desc": ""
-        },
-        {
-          "name": "Video Search and Other Video Tools",
-          "url": "#-video-search-and-other-video-tools",
-          "desc": ""
-        },
-        {
-          "name": "Academic Resources and Grey Literature",
-          "url": "#-academic-resources-and-grey-literature",
-          "desc": ""
-        },
-        {
-          "name": "Geospatial Research and Mapping Tools",
-          "url": "#-geospatial-research-and-mapping-tools",
-          "desc": ""
-        },
-        {
-          "name": "News",
-          "url": "#-news",
-          "desc": ""
-        },
-        {
-          "name": "News Digest and Discovery Tools",
-          "url": "#-news-digest-and-discovery-tools",
-          "desc": ""
-        },
-        {
-          "name": "Fact Checking",
-          "url": "#-fact-checking",
-          "desc": ""
-        },
-        {
-          "name": "Data and Statistics",
-          "url": "#-data-and-statistics",
-          "desc": ""
-        },
-        {
-          "name": "Web Monitoring",
-          "url": "#-web-monitoring",
-          "desc": ""
-        },
-        {
-          "name": "Browsers",
-          "url": "#-browsers",
-          "desc": ""
-        },
-        {
-          "name": "Offline Browsing",
-          "url": "#-offline-browsing",
-          "desc": ""
-        },
-        {
-          "name": "VPN Services",
-          "url": "#-vpn-services",
-          "desc": ""
-        },
-        {
-          "name": "Infographics and Data Visualization",
-          "url": "#-infographics-and-data-visualization",
-          "desc": ""
-        },
-        {
-          "name": "Social Network Analysis",
-          "url": "#-social-network-analysis",
-          "desc": ""
-        },
-        {
-          "name": "Privacy and Encryption Tools",
-          "url": "#-privacy-and-encryption-tools",
-          "desc": ""
-        },
-        {
-          "name": "DNS",
-          "url": "#-dns",
-          "desc": ""
-        },
-        {
-          "name": "Maritime",
-          "url": "#-maritime",
-          "desc": ""
-        },
-        {
-          "name": "Other Tools",
-          "url": "#-other-tools",
-          "desc": ""
-        },
-        {
-          "name": "Threat Intelligence",
-          "url": "#-threat-intelligence",
-          "desc": ""
-        },
-        {
-          "name": "Gaming Platforms",
-          "url": "#-gaming-platforms",
-          "desc": ""
-        },
-        {
-          "name": "Music Streaming Services",
-          "url": "#-music-streaming-services",
-          "desc": ""
-        },
-        {
-          "name": "OSINT Videos",
-          "url": "#-osint-videos",
-          "desc": ""
-        },
-        {
-          "name": "OSINT Blogs",
-          "url": "#-osint-blogs",
-          "desc": ""
-        },
-        {
-          "name": "Other Resources",
-          "url": "#-other-resources",
-          "desc": ""
-        },
-        {
-          "name": "Related Awesome Lists",
-          "url": "#-related-awesome-lists",
-          "desc": ""
-        }
-      ]
-    },
     {
       "category": "General Search",
       "subcategory": null,
@@ -374,11 +13,6 @@
           "name": "Aol",
           "url": "https://search.aol.com",
           "desc": "The web for America."
-        },
-        {
-          "name": "Ask",
-          "url": "https://www.ask.com",
-          "desc": "Ask something and get a answer."
         },
         {
           "name": "Bing",
@@ -452,9 +86,9 @@
       "subcategory": null,
       "tools": [
         {
-          "name": "DorkEye",
-          "url": "https://github.com/xPloits3c/DorkEye",
-          "desc": "DorkEye is a Python-based OSINT framework for automated Google Dorking. It includes an interactive wizard for guided configuration, a dork generator to build and customize queries, a multi-agent analysis pipeline with SQLi detection, secrets scanning, security analysis, and advanced HTML report export with selective result saving — allowing accurate, targeted inclusion of findings."
+          "name": "AtDork",
+          "url": "https://github.com/amnottdevv/atdork",
+          "desc": "Professional OSINT dorking tool featuring adaptive delay, circuit breaker, and automatic backend fallback to avoid IP bans and rate limits."
         },
         {
           "name": "DorkGenius",
@@ -905,11 +539,6 @@
           "name": "ONYPHE",
           "url": "https://search.onyphe.io/",
           "desc": "OSINT engine indexing exposed assets and services across the internet."
-        },
-        {
-          "name": "Search Abuseipdb",
-          "url": "https://github.com/oseasfr/search-abuseipdb",
-          "desc": "Tool to query IPs, ranges and ASN blocks in AbuseIPDB via API with CIDR notation."
         },
         {
           "name": "Shadowserver",
@@ -2913,6 +2542,11 @@
           "desc": "Business directory and search."
         },
         {
+          "name": "LERS Portal Directory (Ministry of Cyber Affairs)",
+          "url": "https://ministryofcyberaffairs.com/lers",
+          "desc": "Directory of platform law-enforcement data-request (LERS) portals (WhatsApp, Google, Apple, Telegram, TikTok, Binance) with eligibility and submission steps for authorised investigators."
+        },
+        {
           "name": "Mugshots",
           "url": "https://mugshots.com/",
           "desc": ""
@@ -3961,6 +3595,11 @@
           "desc": ""
         },
         {
+          "name": "IP.THC.ORG",
+          "url": "https://ip.thc.org/",
+          "desc": "Unlimited Reverse DNS, Subdomain and Reverse CNAME lookups, also provides JSON APIs."
+        },
+        {
           "name": "Icann Lookup",
           "url": "https://lookup.icann.org/en/lookup",
           "desc": "The site allows you to look up domain registration information (WHOIS) on the internet"
@@ -4019,6 +3658,11 @@
           "name": "IPFingerprints",
           "url": "http://www.ipfingerprints.com",
           "desc": "is used to find the approximate geographic location of an IP address along with some other useful information including ISP, TimeZone, Area Code, State."
+        },
+        {
+          "name": "IPOK",
+          "url": "https://ipok.io",
+          "desc": "Free, no-login IP reputation lookup that aggregates up to 8 risk sources, flags residential vs datacenter, and profiles /24 C-block neighbors. Also offers a CLI and a Chrome extension."
         },
         {
           "name": "IPVoid",
@@ -6269,11 +5913,6 @@
           "desc": ""
         },
         {
-          "name": "firefox-stealth",
-          "url": "https://github.com/feder-cr/firefox-stealth",
-          "desc": "C++ source patches that harden Firefox against browser fingerprinting at the engine level (Canvas, WebGL, Audio, Fonts, WebRTC, Timezone). MPL-2.0; build from source or grab the pre-built binary."
-        },
-        {
           "name": "LibreWolf",
           "url": "https://librewolf.net",
           "desc": "Privacy-focused Firefox fork with enhanced security defaults."
@@ -7138,6 +6777,11 @@
           "name": "Merklemap",
           "url": "https://www.merklemap.com/",
           "desc": "Discover and enumerate all subdomains associated with a website, including those not publicly advertised. Works by ingesting certificate transparency logs."
+        },
+        {
+          "name": "Subhunt",
+          "url": "https://github.com/ahmadouniass/Subdomains-finder-subhunt",
+          "desc": "Multi-source subdomain enumeration tool querying crt.sh Certificate Transparency logs, HackerTarget, and RapidDNS. Features HTTP/HTTPS liveness probing with status codes, alive/dead filtering, multi-format export (TXT/JSON/CSV), and a full CLI."
         }
       ]
     },
@@ -7205,11 +6849,6 @@
           "name": "Dehashed CLI",
           "url": "https://github.com/hmaverickadams/DeHashed-API-Tool",
           "desc": "Command-line tool for searching breach databases via DeHashed API."
-        },
-        {
-          "name": "Discoshell",
-          "url": "https://github.com/foozzi/discoshell",
-          "desc": "A simple discovery script that uses popular tools like subfinder, amass, puredns, alterx, massdns and others"
         },
         {
           "name": "Dorkgpt",
@@ -7330,11 +6969,6 @@
           "name": "Outwit",
           "url": "http://www.outwit.com",
           "desc": "Find, grab and organize all kinds of data and media from online sources."
-        },
-        {
-          "name": "PassiveRecon",
-          "url": "https://github.com/rudra496/PassiveRecon-Aggregator",
-          "desc": "Passive asset discovery tool for mapping external IT perimeters. Aggregates Shodan, Crt.sh and public APIs."
         },
         {
           "name": "PGPKeyAnalyser",

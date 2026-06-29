@@ -78,7 +78,7 @@ def parse(md):
         h = HEADER_RE.match(line)
         if h:
             level, title = len(h.group(1)), h.group(2).strip()
-            if title.lower() in SKIP_HEADERS:
+            if _normalize_header(title) in SKIP_HEADERS:
                 category = subcategory = None
                 continue
             if level == 2:
