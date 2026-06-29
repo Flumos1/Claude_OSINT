@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { detect, type Guess } from "@/lib/detect";
 import { enrich, startJob, streamJob, type EnrichResult, type Finding } from "@/lib/api";
 import { suggest, type Suggestion } from "@/lib/suggest";
@@ -44,11 +44,32 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<EnrichResult | null>(null);
   const [progress, setProgress] = useState<{ checked: number; total: number; found: number; mode?: string } | null>(null);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">(
+    () => (localStorage.getItem("osint-theme") as "dark" | "light") || "dark",
+  );
   const [view, setView] = useState("search");
   const [me, setMe] = useState<Me | null>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { getMe().then(setMe).catch(() => setMe(null)); }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("osint-theme", theme);
+  }, [theme]);
+
+  // ⌘K / Ctrl+K — фокус на строку поиска
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setView("search");
+        setTimeout(() => searchRef.current?.focus(), 0);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const nav = me?.user?.role === "admin" ? [...NAV, { id: "users", label: "Пользователи" }] : NAV;
 
@@ -56,9 +77,7 @@ export default function App() {
   const suggestions: Suggestion[] = useMemo(() => (result ? suggest(result) : []), [result]);
 
   function toggleTheme() {
-    const t = theme === "dark" ? "light" : "dark";
-    setTheme(t);
-    document.documentElement.setAttribute("data-theme", t);
+    setTheme((t) => (t === "dark" ? "light" : "dark"));
   }
 
   async function run(type: string, value: string, country?: string) {
@@ -156,6 +175,7 @@ export default function App() {
               <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, background: "var(--surface-1)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "8px 12px" }}>
                 <span style={{ color: "var(--text-muted)" }}>⌕</span>
                 <input
+                  ref={searchRef}
                   value={query}
                   onChange={(e) => { setQuery(e.target.value); setActive(0); }}
                   placeholder="Email, домен, IP, телефон, ник, ЄДРПОУ/ИНН, ФИО…"
@@ -183,6 +203,12 @@ export default function App() {
           <button type="button" onClick={toggleTheme} title="Тема"
             style={{ padding: "9px 11px", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface-1)", color: "var(--text-secondary)", cursor: "pointer" }}>◐</button>
         </header>
+
+        {loading && (
+          <div style={{ height: 2, background: "var(--surface-2)", overflow: "hidden", position: "relative" }}>
+            <div style={{ position: "absolute", top: 0, height: "100%", width: "40%", background: "var(--accent)", animation: "osint-load 1s linear infinite" }} />
+          </div>
+        )}
 
         {view === "tools" && <ToolsView />}
         {view === "cases" && <CasesView />}
