@@ -19,7 +19,8 @@ Copy-Item .env.example .env   # затем заполни ключи (опцио
 | `domain_recon.py` | RDAP + crt.sh поддомены + DNS + Wayback по домену | не нужен |
 | `fetch_awesome_osint.py` | Локальный индекс 1400+ инструментов из awesome-osint + поиск | не нужен |
 | `enrich.py` + `enrichers/` | Раннер энричеров (по мотивам flowsint): сущность → граф | не нужен |
-| `person_search.py` + `translit.py` | Интеллектуальный поиск ФЛ: варианты имени, реестры UA/RU/межд., живой НАЗК | не нужен |
+| `person_search.py` + `translit.py` | Одношаговый поиск ФЛ: варианты имени, реестры UA/RU/межд., живой НАЗК | не нужен |
+| `person_recon.py` | **Многошаговая разведка личности**: итеративный пивотинг + движок корреляции (тиры достоверности), гейт основания | не нужен |
 | `dorks.py` | Генератор Google/Bing/Yandex дорков для домена и персоны | не нужен |
 | `secrets_scan.py` | Каталог secret-regex (24) + скан URL/файла на утёкшие секреты | не нужен |
 | `typosquat.py` | Генератор типо-вариантов домена (dnstwist-стиль) + IDN-омоглифы + DNS-проверка | не нужен |
@@ -43,7 +44,18 @@ python enrich.py company 14360570         # 🇺🇦 ЄДРПОУ (по умол
 python enrich.py company 7707083893 -c ru # 🇷🇺 ИНН/ОГРН
 python enrich.py ip 8.8.8.8
 python enrich.py email user@example.com
+python enrich.py username johndoe          # username_sweep + github_user (ник→особа)
+
+# Многошаговая разведка личности (⚖️ только по правовому основанию!)
+#   Итеративно пивотит сиды (email→gravatar→домен, ник→github→commit-email/сайт/twitter…),
+#   строит граф и КОРРЕЛИРУЕТ достоверность связи (CONFIRMED/PROBABLE/POSSIBLE).
+python person_recon.py --basis "KYC контрагента X" --name "Іван Іваненко" \
+    --email a@b.com --username ivanko --github ivanko --hops 2 \
+    --json ..\cases\<slug>\data\recon.json --report ..\cases\<slug>\recon.md
 ```
+
+> `person_recon.py` не запустится без `--basis` (гейт правового основания зашит в код).
+> Только открытые источники; тиры достоверности — против ложной атрибуции (ник ≠ человек).
 
 Страновые энричеры (`company`) выбираются флагом `-c/--country` (по умолчанию `ua`).
 Нейтральные (`domain/ip/email`) работают для любой страны. Добавить страну —
@@ -73,6 +85,7 @@ python enrich.py email user@example.com
 | `typosquat` | domain | типо-варианты домена + IDN-омоглифы, DNS-проверка живых (dnstwist-стиль) | — ✅ |
 | `secrets_scan` | url | скан страницы на утёкшие секреты (24 паттерна) | — ✅ |
 | `ip_geo_asn` | ip | гео/ASN (ip-api) | — |
+| `github_user` | username | ник → ім'я/компанія/сайт/twitter + email з публічних комітів (пивот нік↔особа) | — ✅ |
 | `email_gravatar` | email | Gravatar + пивот в домен | — |
 | `email_leaks` | email | HIBP (присутствие в утечках) | HIBP_API_KEY |
 | `phone_info` | phone | оператор/регион/тип (офлайн phonenumbers) | — ✅ |
