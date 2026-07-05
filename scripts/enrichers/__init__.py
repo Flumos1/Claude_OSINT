@@ -17,6 +17,7 @@ from . import (  # noqa: F401
     ua_person_enr,
     url_secrets_enr,
     username_enr,
+    vessel_enr,
     website_enr,
     youcontrol_enr,
 )

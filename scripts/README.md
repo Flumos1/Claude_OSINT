@@ -49,6 +49,7 @@ python enrich.py email user@example.com
 python enrich.py username johndoe          # username_sweep + github_user (ник→особа)
 python enrich.py aircraft 3c6444           # ⚖️ трекинг борта (ICAO24-hex): OpenSky + реестры
 python enrich.py aircraft UR-PSR           # бортовой номер → deep-ссылки на реестры
+python enrich.py vessel "IMO 9074729"      # ⚖️ трекинг судна: валидация IMO + реестры
 
 # Многошаговая разведка личности (⚖️ только по правовому основанию!)
 #   Итеративно пивотит сиды (email→gravatar→домен, ник→github→commit-email/сайт/twitter…),
@@ -103,6 +104,7 @@ python image_tools.py compare <url_avatar1> <url_avatar2>
 | `typosquat` | domain | типо-варианты домена + IDN-омоглифы, DNS-проверка живых (dnstwist-стиль) | — ✅ |
 | `secrets_scan` | url | скан страницы на утёкшие секреты (24 паттерна) | — ✅ |
 | `aircraft_track` | aircraft | ⚖️ трекинг ВС (актива, не пассажира): OpenSky состояние + рейсы по ICAO24 + реестры | — ✅ |
+| `vessel_track` | vessel | ⚖️ трекинг судна (актива, не экипажа): валидация IMO + реестры (Equasis/MarineTraffic) | — ✅ |
 | `ip_geo_asn` | ip | гео/ASN (ip-api) | — |
 | `github_user` | username | ник → ім'я/компанія/сайт/twitter + email з публічних комітів + аватар-пивот | — ✅ |
 | `email_gravatar` | email | Gravatar (профиль, аккаунты) + пивот в домен + аватар/reverse-image | — |
