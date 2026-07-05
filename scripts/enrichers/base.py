@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 
 ENTITY_TYPES = {
     "domain", "ip", "email", "username", "phone",
-    "company", "person", "crypto", "url",
+    "company", "person", "crypto", "url", "aircraft",
 }
 
 

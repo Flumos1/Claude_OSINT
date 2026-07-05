@@ -74,6 +74,28 @@
 | GitHub | github.com search, gitleaks | Код, утечки секретов, email из коммитов |
 | Geo | Google Earth, Mapillary, SunCalc, Overpass Turbo (OSM) | Гео/хронолокация |
 
+## Авиация и транспорт (⚖️ легально: борты/суда, НЕ пассажиры)
+
+> Отслеживаем **воздушное/морское судно как актив** (для DD, санкций, расследований
+> «чей джет / куда летал этот борт»), а не перелёты частных лиц. ADS-B/AIS —
+> публично вещаемые сигналы. Пробив пассажиров по ФИО (PNR/«базы авиабилетов») —
+> вне закона и вне наших рамок (см. [ethics-legal.md](../ethics-legal.md)).
+
+| Источник | URL | Что даёт |
+|----------|-----|----------|
+| ADS-B Exchange | globe.adsbexchange.com | Трекинг ВС без фильтров (в т.ч. частные/military), поиск по reg/hex |
+| OpenSky Network | opensky-network.org | **Открытый API (keyless)**: состояние борта + история рейсов по ICAO24 |
+| Flightradar24 | flightradar24.com | Живой трекинг, история (частично платно) |
+| Planespotters / JetPhotos | planespotters.net, jetphotos.com | Борт → тип, оператор, история, фото |
+| FAA Registry (США) | registry.faa.gov/aircraftinquiry | N-number → владелец/оператор |
+| ICAO24 ↔ reg | opensky-network.org/aircraft-profile | Резолв hex ↔ бортовой номер |
+| MarineTraffic / VesselFinder | marinetraffic.com, vesselfinder.com | Морские суда (AIS): позиция, история, владелец |
+| Эквасис (IMO) | equasis.org | Судно по IMO: собственник, менеджер, флаг |
+
+> Скрипт: `python scripts/enrich.py aircraft <ICAO24-hex|бортовой_номер>` — живой OpenSky
+> (состояние + недавние рейсы) + deep-ссылки на реестры; борт пивотится в узел
+> оператора/компании для корпоративного DD.
+
 ## Поисковые техники (Google/Yandex dorking)
 
 - `site:` `inurl:` `intitle:` `filetype:` `"точная фраза"` `-исключение` `OR` `*`

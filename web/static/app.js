@@ -126,7 +126,7 @@ function drawGraph(g) {
   const text = cs.getPropertyValue("--text").trim();
   const border = cs.getPropertyValue("--border-strong").trim();
   const panel = cs.getPropertyValue("--bg").trim();
-  const palette = { domain: accent, ip: "#0e8a6e", email: "#9a6700", person: "#b4231f", company: "#6d28d9", username: "#0891b2", url: "#5a6470" };
+  const palette = { domain: accent, ip: "#0e8a6e", email: "#9a6700", person: "#b4231f", company: "#6d28d9", username: "#0891b2", url: "#5a6470", aircraft: "#0369a1", airport: "#0e7490" };
   const nodes = g.nodes.map(n => ({
     id: n.id, label: `${n.value}`, group: n.type,
     color: { background: panel, border: palette[n.type] || border, highlight: { background: panel, border: accent } },
