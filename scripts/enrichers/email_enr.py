@@ -4,12 +4,20 @@
 адресам (см. ethics-legal.md). Когда будет ключ — отдельный энричер breach_hibp.
 """
 import hashlib
+import os
+import sys
 
 import requests
 
 from .base import EnricherResult, enricher
 
 TIMEOUT = 15
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from image_tools import ahash, reverse_image_links
+except Exception:
+    ahash = reverse_image_links = None
 
 
 @enricher("email_gravatar", "email")
@@ -36,6 +44,17 @@ def enrich_email(value: str) -> EnricherResult:
             display = entry.get("displayName") or entry.get("preferredUsername")
             root.attrs["gravatar"] = f"https://gravatar.com/{h}"
             res.fact(f"Есть Gravatar-профиль: {display or h}", "gravatar.com", "C2")
+            # аватар → reverse-image ссылки + опц. aHash (сверка лица между платформами)
+            if reverse_image_links is not None:
+                av = f"https://gravatar.com/avatar/{h}?s=256"
+                img = res.node("url", av, kind="avatar")
+                res.edge(root, img, "avatar")
+                ph = ahash(av) if ahash else None
+                if ph:
+                    img.attrs["ahash"] = ph
+                    res.fact(f"Аватар aHash={ph} (для звірки облич)", "image_tools", "C3")
+                res.fact("Reverse-image: " + " | ".join(
+                    f"{k}: {v}" for k, v in reverse_image_links(av).items()), "image_tools")
             for acc in entry.get("accounts", []):
                 url = acc.get("url")
                 if url:

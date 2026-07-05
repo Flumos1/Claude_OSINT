@@ -33,6 +33,8 @@ sys.path.insert(0, str(SCRIPTS))
 from enrich import run as enrich_run  # noqa: E402
 from enrichers.base import ENTITY_TYPES, REGISTRY  # noqa: E402
 from person_search import dossier_to_markdown, search_person  # noqa: E402
+from person_recon import build as recon_build  # noqa: E402
+import osint_graph as OG  # noqa: E402
 
 try:
     import markdown as md
@@ -138,6 +140,41 @@ def api_person_report(req: PersonReq):
     d = search_person(req.name.strip(), req.dob, req.rnokpp, req.email or None,
                       req.phone or None, req.username or None, tuple(req.countries))
     return JSONResponse({"markdown": dossier_to_markdown(d)})
+
+
+class ReconReq(BaseModel):
+    basis: str = ""
+    name: str | None = None
+    email: str = ""
+    username: str = ""
+    github: str = ""
+    phone: str = ""
+    domain: str = ""
+    hops: int = 2
+
+
+@app.post("/api/recon")
+def api_recon(req: ReconReq):
+    """Многошаговая разведка личности + анализ. Гейт правового основания — в коде."""
+    if not req.basis.strip():
+        raise HTTPException(400, "Укажите правовое основание (basis) — это обязательно.")
+    if not any([req.name, req.email, req.username, req.github, req.phone, req.domain]):
+        raise HTTPException(400, "Нужен хотя бы один сид (name/email/username/github/phone/domain).")
+
+    def split(s):
+        return [x.strip() for x in (s or "").split(",") if x.strip()]
+
+    seeds = {
+        "_name": (req.name or "").strip() or None,
+        "email": split(req.email),
+        "username": list(dict.fromkeys(split(req.username) + split(req.github))),
+        "phone": split(req.phone),
+        "domain": split(req.domain),
+    }
+    d = recon_build(seeds, max(1, min(req.hops, 3)))
+    d["analysis"] = OG.analyze(d)
+    d["timeline"] = OG.timeline(d)
+    return d
 
 
 @app.get("/api/sources/{code}")

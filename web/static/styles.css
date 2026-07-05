@@ -278,3 +278,31 @@ table.tbl td.mono, table.tbl .mono { font-family: var(--font-mono); font-size: 1
   .stats { grid-template-columns: repeat(3, 1fr); }
   .grid-2 { grid-template-columns: 1fr; }
 }
+
+/* ── Recon-граф ─────────────────────────────────────────────── */
+.warn-flash { animation: flash 1s ease 2; }
+@keyframes flash { 50% { background: var(--bad-weak); border-color: var(--bad); } }
+
+.tier-summary { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.tier-card {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 12px 20px; background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); min-width: 96px;
+}
+.tier-card b { font-size: 22px; }
+.tier-card span { font-size: 12px; color: var(--text-muted); }
+.tier-emoji { font-size: 16px; }
+
+.risk-badge { padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.risk-badge.HIGH { background: var(--bad-weak); color: var(--bad); }
+.risk-badge.MEDIUM { background: var(--warn-weak); color: var(--warn); }
+.risk-badge.LOW { background: var(--ok-weak); color: var(--ok); }
+
+.ledger-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.ledger-row:last-child { border-bottom: none; }
+.tier-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+
+.graph-legend { display: flex; gap: 16px; margin-top: 10px; font-size: 12px; color: var(--text-muted); }
+.graph-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+.anomaly { color: var(--warn); font-weight: 500; }
+#graph { height: 460px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); }

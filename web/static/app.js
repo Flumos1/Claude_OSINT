@@ -14,6 +14,7 @@ const api = {
   meta: () => fetch("/api/meta").then(r => r.json()),
   enrich: (body) => fetch("/api/enrich", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(async r => { if (!r.ok) throw new Error((await r.json()).detail || r.statusText); return r.json(); }),
   person: (body) => fetch("/api/person", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(async r => { if (!r.ok) throw new Error((await r.json()).detail || r.statusText); return r.json(); }),
+  recon: (body) => fetch("/api/recon", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(async r => { if (!r.ok) throw new Error((await r.json()).detail || r.statusText); return r.json(); }),
   source: (code) => fetch(`/api/sources/${code}`).then(r => r.json()),
   skills: () => fetch("/api/skills").then(r => r.json()),
   cases: () => fetch("/api/cases").then(r => r.json()),
@@ -198,6 +199,98 @@ function renderDossier(d) {
       <div class="panel-body"><ul class="notes-list">${d.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul></div></div>`;
   $("#dl-report")?.addEventListener("click", downloadReport);
   drawGraph(d);
+}
+
+/* ---------- Recon-граф ---------- */
+const TIER = {
+  CONFIRMED: { color: "#1a7f37", emoji: "🟢", label: "CONFIRMED" },
+  PROBABLE: { color: "#9a6700", emoji: "🟡", label: "PROBABLE" },
+  POSSIBLE: { color: "#8b95a1", emoji: "⚪", label: "POSSIBLE" },
+};
+
+views.recon = () => {
+  $("#recon-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const body = {
+      basis: $("#r-basis").value.trim(),
+      name: $("#r-name").value.trim() || null,
+      email: $("#r-email").value.trim(),
+      username: $("#r-username").value.trim(),
+      github: $("#r-github").value.trim(),
+      phone: $("#r-phone").value.trim(),
+      hops: parseInt($("#r-hops").value, 10) || 2,
+    };
+    if (!body.basis) { $("#recon-basis-warn").classList.add("warn-flash"); return; }
+    const out = $("#recon-result");
+    out.innerHTML = `<div class="panel"><div class="panel-body loading"><span class="spin">◴</span> Многошаговый пивотинг и корреляция…</div></div>`;
+    try { renderRecon(await api.recon(body)); }
+    catch (err) { out.innerHTML = `<div class="panel"><div class="panel-body"><span class="f-tag ERROR">ERROR</span> ${esc(err.message)}</div></div>`; }
+  });
+};
+
+function renderRecon(d) {
+  state.lastRecon = d;
+  const tierOf = {};
+  (d.ledger || []).forEach(l => { tierOf[l.id] = l; });
+  const an = d.analysis || {}, tl = d.timeline || {};
+  const counts = { CONFIRMED: 0, PROBABLE: 0, POSSIBLE: 0 };
+  (d.ledger || []).forEach(l => counts[l.tier]++);
+
+  const ledgerRows = (tier) => (d.ledger || []).filter(l => l.tier === tier).map(l =>
+    `<div class="ledger-row"><span class="tier-dot" style="background:${TIER[tier].color}"></span>
+       <span class="tag-type">${esc(l.type)}</span>
+       <span class="mono">${esc(l.value)}</span>
+       <span class="muted">хоп ${l.hop} · ${esc(l.reason)}</span></div>`).join("") || `<div class="muted" style="padding:6px 0">—</div>`;
+
+  const riskBadge = an.summary ? `<span class="risk-badge ${an.summary.risk_level}">риск: ${an.summary.risk_level}</span>` : "";
+  const risks = (an.risks || []).map(r => `<li><span class="risk-badge ${r.level}">${r.level}</span> <b>${esc(r.label)}</b> — ${esc(r.evidence)}</li>`).join("");
+  const insights = (an.insights || []).map(i => `<li><span class="f-tag ${esc(i.label)}">${esc(i.label)}</span> ${esc(i.text)}</li>`).join("");
+  const timeline = (tl.events || []).slice(0, 14).map(e => `<li><b class="mono">${esc(e.date)}</b> — ${esc(e.what)}</li>`).join("");
+  const anomalies = (tl.anomalies || []).map(a => `<li class="anomaly">⚑ ${esc(a)}</li>`).join("");
+
+  $("#recon-result").innerHTML = `
+    <div class="tier-summary">
+      ${["CONFIRMED", "PROBABLE", "POSSIBLE"].map(t =>
+        `<div class="tier-card"><span class="tier-emoji">${TIER[t].emoji}</span><b>${counts[t]}</b><span>${t}</span></div>`).join("")}
+      <div class="tier-card">${riskBadge}<span>узлов ${d.nodes.length} · связей ${d.edges.length}</span></div>
+    </div>
+    <div class="panel dossier-section"><div class="panel-head"><h2>Граф личности (цвет = достоверность связи)</h2></div>
+      <div class="panel-body"><div id="graph"></div>
+        <div class="graph-legend">${["CONFIRMED", "PROBABLE", "POSSIBLE"].map(t => `<span><i style="background:${TIER[t].color}"></i>${t}</span>`).join("")}</div></div></div>
+    ${risks ? `<div class="panel dossier-section"><div class="panel-head"><h2>⚠️ Риск-флаги</h2></div><div class="panel-body"><ul class="notes-list">${risks}</ul></div></div>` : ""}
+    ${insights ? `<div class="panel dossier-section"><div class="panel-head"><h2>🧠 Выводы и гипотезы</h2></div><div class="panel-body"><ul class="notes-list">${insights}</ul></div></div>` : ""}
+    <div class="grid-2">
+      <div class="panel dossier-section"><div class="panel-head"><h2>🟢 CONFIRMED (${counts.CONFIRMED})</h2></div><div class="panel-body">${ledgerRows("CONFIRMED")}</div></div>
+      <div class="panel dossier-section"><div class="panel-head"><h2>🟡 PROBABLE (${counts.PROBABLE})</h2></div><div class="panel-body">${ledgerRows("PROBABLE")}</div></div>
+    </div>
+    <div class="panel dossier-section"><div class="panel-head"><h2>⚪ POSSIBLE (${counts.POSSIBLE}) — проверяй вручную</h2></div><div class="panel-body">${ledgerRows("POSSIBLE")}</div></div>
+    ${timeline ? `<div class="panel dossier-section"><div class="panel-head"><h2>🗓️ Таймлайн</h2></div><div class="panel-body"><ul class="notes-list">${timeline}${anomalies}</ul></div></div>` : ""}`;
+
+  drawReconGraph(d, tierOf);
+}
+
+function drawReconGraph(d, tierOf) {
+  const host = $("#graph");
+  if (!host || typeof vis === "undefined") { if (host) host.innerHTML = `<div class="loading">Граф-движок не загрузился.</div>`; return; }
+  const cs = getComputedStyle(document.body);
+  const text = cs.getPropertyValue("--text").trim();
+  const border = cs.getPropertyValue("--border-strong").trim();
+  const panel = cs.getPropertyValue("--bg").trim();
+  const nodes = d.nodes.map(n => {
+    const t = tierOf[n.id]; const tier = t ? t.tier : (n.hop === 0 ? "CONFIRMED" : "POSSIBLE");
+    const col = TIER[tier].color;
+    return { id: n.id, label: n.value, shape: n.type === "person" ? "ellipse" : "box",
+      color: { background: panel, border: col, highlight: { background: panel, border: col } },
+      borderWidth: n.hop === 0 ? 4 : 2, font: { color: text, face: "Inter", size: 13 }, margin: 8,
+      title: `${n.type} · ${tier}${t ? " · " + t.reason : ""}` };
+  });
+  const edges = d.edges.map(e => ({ from: e.source, to: e.target, label: e.rel, arrows: "to",
+    color: { color: border }, font: { color: cs.getPropertyValue("--text-faint").trim(), size: 10, strokeWidth: 0 } }));
+  if (state.network) state.network.destroy();
+  state.network = new vis.Network(host, { nodes, edges }, {
+    physics: { stabilization: true, barnesHut: { springLength: 140, gravitationalConstant: -7000 } },
+    interaction: { hover: true }, nodes: { shapeProperties: { borderRadius: 6 } },
+  });
 }
 
 /* ---------- Sources ---------- */

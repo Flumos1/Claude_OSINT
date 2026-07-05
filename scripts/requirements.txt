@@ -2,3 +2,5 @@ requests>=2.31
 dnspython>=2.4
 python-dotenv>=1.0
 phonenumbers>=8.13
+# опционально: pHash-сверка аватаров в image_tools.py (без него — reverse-image ссылки)
+# pillow>=10.0

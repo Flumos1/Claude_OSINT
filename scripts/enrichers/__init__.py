@@ -1,6 +1,7 @@
 """Энричеры (архитектура по мотивам flowsint). Импорт регистрирует их в REGISTRY."""
 from . import (  # noqa: F401
     domain_enr,
+    email_accounts_enr,
     email_enr,
     email_leaks_enr,
     github_user_enr,

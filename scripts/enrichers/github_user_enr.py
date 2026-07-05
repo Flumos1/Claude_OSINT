@@ -10,10 +10,32 @@ API GitHub keyless: ~60 req/hr на IP. Для больших прогонов �
 """
 import os
 import re
+import sys
 
 import requests
 
 from .base import EnricherResult, enricher
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from image_tools import ahash, reverse_image_links
+except Exception:  # image_tools недоступен — аватар-пивот отключится мягко
+    ahash = reverse_image_links = None
+
+
+def _add_avatar(res: EnricherResult, root, url: str) -> None:
+    """Общий аватар-пивот: узел image + reverse-image ссылки + опц. aHash в attrs."""
+    if reverse_image_links is None:
+        return
+    img = res.node("url", url, kind="avatar")
+    res.edge(root, img, "avatar")
+    ph = ahash(url) if ahash else None
+    if ph:
+        img.attrs["ahash"] = ph
+        res.fact(f"Аватар aHash={ph} (для звірки облич між платформами)", "image_tools", "C3")
+    links = reverse_image_links(url)
+    res.fact("Reverse-image (звірка обличчя): " +
+             " | ".join(f"{k}: {v}" for k, v in links.items()), "image_tools")
 
 API = "https://api.github.com"
 TIMEOUT = 15
@@ -75,6 +97,10 @@ def enrich_github(value: str) -> EnricherResult:
 
         res.fact(f"Публічних репозиторіїв: {d.get('public_repos', 0)}; "
                  f"підписників: {d.get('followers', 0)}", "GitHub API /users", "B2")
+
+        # аватар → узел-изображение + reverse-image ссылки (кросс-платформенная сверка лица)
+        if d.get("avatar_url"):
+            _add_avatar(res, root, d["avatar_url"])
 
         # commit-author email'ы из публичных событий — ник → реальная почта
         _harvest_commit_emails(res, root, u)

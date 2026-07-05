@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "osint-web",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["app.py"],
+      "cwd": "web",
+      "port": 8000
+    }
+  ]
+}
