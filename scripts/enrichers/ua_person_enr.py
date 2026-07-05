@@ -30,9 +30,13 @@ def registry_links(name: str) -> dict[str, str]:
         "Судові рішення (reyestr)": f"https://reyestr.court.gov.ua/?suchau={q}",
         "Декларації НАЗК": f"https://public.nazk.gov.ua/documents/list?q={q}",
         "PEP (публічні діячі)": f"https://pep.org.ua/uk/search?q={q}",
+        "Реєстр корупціонерів (НАЗК)": "https://corruptinfo.nazk.gov.ua/  (пошук за ПІБ)",
+        "Люстрація (Очищення влади)": "https://lustration.minjust.gov.ua/register",
         "Держреєстр санкцій (РНБО)": "https://drs.nsdc.gov.ua/  (пошук за ПІБ)",
         "Розшук осіб (МВС)": "https://wanted.mvs.gov.ua/",
         "Реєстр банкрутів": "https://bankrutstvo.com.ua/  / через ЄДР",
+        "Opendatabot — перевірка фізособи": "https://opendatabot.ua/open/check-person",
+        "ЄДЕБО — документи про освіту": "https://info.edbo.gov.ua/edu-documents/  (верифікація диплома)",
     }
 
 
