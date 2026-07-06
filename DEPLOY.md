@@ -1,51 +1,67 @@
-# Деплой на Vercel
+# Деплой Claude OSINT
 
-Веб-оболочка (`web/app.py`, FastAPI) готова к деплою на Vercel как serverless ASGI-функция.
+Платформа упакована в один образ (multi-stage: Node собирает фронтенд, Python отдаёт
+FastAPI). Подробности архитектуры — [web/ARCHITECTURE.md](web/ARCHITECTURE.md).
 
-## Что работает на Vercel и что нет
+## Быстрый старт (Docker)
 
-✅ **Работает:** дашборд, обогащение (все энричеры), поиск ФЛ, recon-граф, спецобъекты
-(aircraft/vessel/ioc), источники, скилы, экспорт отчётов **MD / DOCX / PDF**.
+```bash
+docker compose up -d --build
+# открой http://localhost:8000  (редиректит на /app/)
+```
 
-⚠️ **Ограничения serverless:**
-- **Файловая система только для чтения** → «💾 Сохранить в кейс» **отключено** (кнопка скрыта,
-  показан баннер демо-режима). Кейсы ведутся в локальном запуске. Env `VERCEL=1` ставится
-  автоматически и включает read-only; можно форсить `READ_ONLY=1`.
-- **Лимит времени запроса** (~10 c на Hobby, ~60 c на Pro): «медленные» энричеры
-  (`username_sweep` по ~48 сайтам, `person_recon`, `domain_recon`) могут не успеть.
-  На Pro-плане запас больше. Быстрые (company/ip/crypto/ioc/vessel/aircraft) — без проблем.
+Остановить: `docker compose down`. Логи: `docker compose logs -f`.
 
-## Файлы деплоя (уже в репозитории)
+## Авторизация (мульти-юзер)
 
-- `vercel.json` — билд `api/index.py` через `@vercel/python`, роутинг всех путей в функцию,
-  `includeFiles: "**"` (бандлит `web/`, `knowledge/`, `scripts/`, `.claude/`, `templates/`).
-- `api/index.py` — ASGI-entry: добавляет пути и импортирует `app` из `web/app.py`.
-- `requirements.txt` (корень) — зависимости для Vercel (fastapi, requests, dnspython,
-  phonenumbers, python-dotenv, markdown).
-- `.vercelignore` — исключает venv/кэш/данные кейсов/секреты.
+По умолчанию авторизация **выключена** — годится только для localhost. Для доступа
+из сети включи мульти-юзер и засей администратора при первом запуске:
 
-## Шаги
+```bash
+# .env рядом с docker-compose.yml:
+OSINT_AUTH=1
+OSINT_ADMIN_USER=admin
+OSINT_ADMIN_PASSWORD=<надёжный-пароль>
+```
 
-1. **Залей репозиторий на GitHub** (если ещё нет).
-2. **Vercel → Add New → Project → Import** этот репозиторий. Framework Preset: **Other**
-   (vercel.json всё задаёт сам). Root Directory: **оставь корень репо**.
-3. **Environment Variables** (Project Settings → Environment Variables):
-   | Переменная | Зачем | Обязательна |
-   |------------|-------|-------------|
-   | `ACCESS_PASSWORD` | Пароль на вход (парольный гейт). Без неё доступ открыт всем. | **да, для публичного** |
-   | `HIBP_API_KEY`, `VIRUSTOTAL_API_KEY`, `ABUSEIPDB_API_KEY`, `GREYNOISE_API_KEY`, `ODB_API_KEY`, `YOUCONTROL_API_KEY`, `WHOISXML_API_KEY`, `OPENSANCTIONS_API_KEY` | Живые данные соответствующих энричеров (иначе — keyless/deep-ссылки). | нет |
+Первый старт создаст админа. Вход — страница `/login` (логин+пароль), сессия в
+httponly-cookie (7 дней). Админ добавляет пользователей (роли `admin`/`analyst`)
+в разделе **«Пользователи»**. Пользователи и сессии — в SQLite `data/osint.db`
+(том `./data`, в `.gitignore`).
 
-   `VERCEL=1` платформа ставит сама — read-only включится автоматически.
-4. **Deploy**. После билда открой URL — при заданном `ACCESS_PASSWORD` появится экран входа.
+Программный доступ к API: можно задать `OSINT_TOKEN` и слать заголовок
+`X-Token: <токен>` (fallback для скриптов помимо пользовательских сессий).
 
-## Обновление после изменений
+> ⚠️ Данные расследований чувствительны: наружу выставляй **только** за TLS
+> reverse-proxy и с включённой авторизацией.
 
-`git push` в подключённую ветку → Vercel пересоберёт автоматически.
+## TLS reverse-proxy
 
-## Заметки по безопасности
+Готовые примеры в [`deploy/`](deploy/): [Caddyfile](deploy/Caddyfile) (авто-TLS
+Let's Encrypt) и [nginx.conf](deploy/nginx.conf). Оба проксируют на `127.0.0.1:8000`
+и настроены под SSE (прогресс скана не буферизуется).
 
-- Публичный OSINT-инструмент без защиты противоречит OPSEC-рамкам ([knowledge/opsec.md](knowledge/opsec.md)) —
-  **задай `ACCESS_PASSWORD`**. Cookie-сессия подписана (HMAC), `Secure`+`HttpOnly` на HTTPS.
-- API-ключи держи только в Environment Variables Vercel (не в репозитории).
-- Для чувствительных расследований (запись кейсов, тяжёлые прогоны) используй **локальный**
-  запуск: `cd web && python app.py`.
+## Персистентность
+
+`docker-compose.yml` монтирует `./cases` в контейнер — кейсы и собранные данные
+(`cases/<slug>/data/collected.json`) переживают перезапуск.
+
+## Глубокий username-скан в контейнере
+
+Датасет WhatsMyName (`scripts/wmn-data.json`) не входит в образ. Варианты:
+
+```bash
+# 1) выполнить внутри контейнера
+docker compose exec osint python ../scripts/fetch_wmn.py
+# 2) или смонтировать локальный файл — раскомментируй volume в docker-compose.yml
+```
+Включить режим: переменная окружения `USERNAME_DEEP=1`.
+
+## Локальный запуск без Docker
+
+```powershell
+cd web
+python -m pip install -r requirements.txt -r ..\scripts\requirements.txt
+cd ui; npm install; npm run build; cd ..
+python app.py            # http://127.0.0.1:8000
+```

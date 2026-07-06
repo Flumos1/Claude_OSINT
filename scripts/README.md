@@ -19,13 +19,10 @@ Copy-Item .env.example .env   # затем заполни ключи (опцио
 | `domain_recon.py` | RDAP + crt.sh поддомены + DNS + Wayback по домену | не нужен |
 | `fetch_awesome_osint.py` | Локальный индекс 1400+ инструментов из awesome-osint + поиск | не нужен |
 | `enrich.py` + `enrichers/` | Раннер энричеров (по мотивам flowsint): сущность → граф | не нужен |
-| `person_search.py` + `translit.py` | Одношаговый поиск ФЛ: варианты имени, реестры UA/RU/межд., живой НАЗК | не нужен |
-| `person_recon.py` | **Многошаговая разведка личности**: итеративный пивотинг + движок корреляции (тиры достоверности), гейт основания | не нужен |
+| `person_search.py` + `translit.py` | Интеллектуальный поиск ФЛ: варианты имени, реестры UA/RU/межд., живой НАЗК | не нужен |
 | `dorks.py` | Генератор Google/Bing/Yandex дорков для домена и персоны | не нужен |
 | `secrets_scan.py` | Каталог secret-regex (24) + скан URL/файла на утёкшие секреты | не нужен |
-| `analyze.py` + `osint_graph.py` | **Аналитика графа**: слияние сущностей, риск-флаги, выводы/гипотезы, таймлайн, бриф | не нужен |
-| `image_tools.py` | Аватар-пивот: reverse-image ссылки + опц. pHash (сверка лиц между платформами) | не нужен |
-| `typosquat.py` | Генератор типо-вариантов домена (dnstwist-стиль) + IDN-омоглифы + DNS-проверка | не нужен |
+| `fetch_wmn.py` | Датасет WhatsMyName (700+ сайтов) для deep-режима username | не нужен |
 
 ```powershell
 # Разведка по домену
@@ -36,9 +33,6 @@ python fetch_awesome_osint.py
 # Поиск инструмента по локальному индексу
 python fetch_awesome_osint.py --search username
 
-# Типосквоттинг/брендозащита: похожие домены + кто из них уже зарегистрирован
-python typosquat.py example.com --resolve --json ..\cases\<slug>\data\typosquat.json
-
 # Энричеры: обогащение сущности до графа (узлы/связи/факты)
 python enrich.py --list
 python enrich.py domain example.com --json ..\cases\<slug>\data\graph.json
@@ -46,35 +40,19 @@ python enrich.py company 14360570         # 🇺🇦 ЄДРПОУ (по умол
 python enrich.py company 7707083893 -c ru # 🇷🇺 ИНН/ОГРН
 python enrich.py ip 8.8.8.8
 python enrich.py email user@example.com
-python enrich.py username johndoe          # username_sweep + github_user (ник→особа)
-python enrich.py aircraft 3c6444           # ⚖️ трекинг борта (ICAO24-hex): OpenSky + реестры
-python enrich.py aircraft UR-PSR           # бортовой номер → deep-ссылки на реестры
-python enrich.py vessel "IMO 9074729"      # ⚖️ трекинг судна: валидация IMO + реестры
 
-# Многошаговая разведка личности (⚖️ только по правовому основанию!)
-#   Итеративно пивотит сиды (email→gravatar→домен, ник→github→commit-email/сайт/twitter…),
-#   строит граф и КОРРЕЛИРУЕТ достоверность связи (CONFIRMED/PROBABLE/POSSIBLE).
-python person_recon.py --basis "KYC контрагента X" --name "Іван Іваненко" \
-    --email a@b.com --username ivanko --github ivanko --hops 2 \
-    --json ..\cases\<slug>\data\recon.json --report ..\cases\<slug>\recon.md
+# Username: быстрый чек (21 платформа) со скорингом уверенности 0–100%
+python enrich.py username johndoe
+# Глубокий чек (700+ сайтов WhatsMyName, параллельно) — сначала скачать датасет
+python fetch_wmn.py
+$env:USERNAME_DEEP=1; python enrich.py username johndoe   # PowerShell
+# Тюнинг deep: USERNAME_DEEP_MAX (лимит сайтов), USERNAME_DEEP_WORKERS, USERNAME_DEEP_TIMEOUT
 ```
 
-> `person_recon.py` не запустится без `--basis` (гейт правового основания зашит в код).
-> Только открытые источники; тиры достоверности — против ложной атрибуции (ник ≠ человек).
-
-```powershell
-# Аналитика поверх графа: слияние сущностей + риски + выводы/гипотезы + таймлайн + бриф
-python person_recon.py --basis "..." --name "..." --username u --json g.json
-python analyze.py --graph g.json --report brief.md
-python analyze.py --enrich company 14360570         # собрать граф и сразу проанализировать
-
-# Аватар-пивот (сверка лица между платформами; pHash — если установлен pillow)
-python image_tools.py compare <url_avatar1> <url_avatar2>
-```
-
-> Аналитика прозрачна: **факт** остаётся фактом со ссылкой, **вывод/гипотеза** помечаются
-> (INFERENCE/HYPOTHESIS). Риск-флаги считаются только по содержательным наблюдениям, не по
-> deep-ссылкам. `pillow` — опционален (без него аватар-пивот даёт reverse-image ссылки).
+> **Скоринг username:** каждое попадание получает уверенность 0–100% и Admiralty-оценку
+> (D3 ≥78% / D4 55–77% / D5 <55%). Буква `D` — источник-скрейпер ненадёжен по природе;
+> цифра двигается по силе детекта. Режет soft-404 (HTTP 200 на любой ник, редиректы
+> на login/главную) — фокусируй ручную проверку на хитах низкой уверенности.
 
 Страновые энричеры (`company`) выбираются флагом `-c/--country` (по умолчанию `ua`).
 Нейтральные (`domain/ip/email`) работают для любой страны. Добавить страну —
@@ -94,48 +72,38 @@ python image_tools.py compare <url_avatar1> <url_avatar2>
 |---------|--------------|----------|------|
 | `ua_company_links` | company [ua] | валидация ЄДРПОУ + ссылки на реестры | — |
 | `prozorro` | company [ua] | **ProZorro API** (тендеры по коду) | — ✅ |
-| `opendatabot` | company [ua] | Opendatabot API: карточка + доп. сервіси (суди/штрафи/нерухомість) | ODB_API_KEY |
-| `youcontrol` | company [ua] | YouControl/YouScore (карточка, бенефіціари); без ключа — deep-ссылка | YOUCONTROL_API_KEY |
+| `opendatabot` | company [ua] | Opendatabot API (карточка компании) | ODB_API_KEY |
 | `ua_person_links` | person [ua] | валидация РНОКПП + ссылки (ЄРБ/АСВП/reyestr…) | — |
 | `nazk_declarations` | person [ua] | **НАЗК API** (декларації посадовців) | — ✅ |
 | `ru_company_links` | company [ru] | валидация ИНН/ОГРН + ссылки на реестры РФ | — |
-| `ru_person_links` | person [ru] | валидация ИНН-физлица + ссылки (ФССП/Федресурс/суды/розыск) | — |
 | `domain_recon` | domain | RDAP/crt.sh/DNS/Wayback + дорки | — |
 | `website` | domain | SSL-сертификат, security-заголовки, сервер, robots/security.txt (web-check-стиль) | — ✅ |
-| `typosquat` | domain | типо-варианты домена + IDN-омоглифы, DNS-проверка живых (dnstwist-стиль) | — ✅ |
-| `archive_site` / `archive_page` | domain / url | история Wayback (снапшоты, первый/последний, таймлайн) | — ✅ |
-| `whois_history` | domain | история WHOIS (смена регистранта/NS); без ключа — deep-ссылки | WHOISXML_API_KEY |
-| `ioc_reputation` | ip / domain / url | репутация индикатора: VT + AbuseIPDB + GreyNoise (без ключа — deep-ссылки) | VT/AbuseIPDB/GreyNoise |
 | `secrets_scan` | url | скан страницы на утёкшие секреты (24 паттерна) | — ✅ |
-| `crypto_addr` | crypto | BTC/ETH/TRON баланс + транзакции (blockstream/ethplorer/tronscan) + эксплореры | — ✅ |
-| `aircraft_track` | aircraft | ⚖️ трекинг ВС (актива, не пассажира): OpenSky состояние + рейсы по ICAO24 + реестры | — ✅ |
-| `vessel_track` | vessel | ⚖️ трекинг судна (актива, не экипажа): валидация IMO + реестры (Equasis/MarineTraffic) | — ✅ |
 | `ip_geo_asn` | ip | гео/ASN (ip-api) | — |
-| `ip_ports` | ip | открытые порты/CVE/hostnames (Shodan InternetDB, пассивно) | — ✅ |
-| `github_user` | username | ник → ім'я/компанія/сайт/twitter + email з публічних комітів + аватар-пивот | — ✅ |
-| `email_gravatar` | email | Gravatar (профиль, аккаунты) + пивот в домен + аватар/reverse-image | — |
-| `email_accounts` | email | существование по email (Gravatar/Libravatar, штатно) + tool-пивот holehe/epieos | — ✅ |
+| `ip_ports` | ip | открытые порты/сервисы/CVE (Shodan InternetDB) | — ✅ |
+| `ip_reputation` | ip | репутация/шум (GreyNoise Community) | — ✅ |
+| `typosquat` | domain | look-alike домены + проверка регистрации (DNS) | — ✅ |
+| `ioc` | ip/domain/url | репутация: VirusTotal + AbuseIPDB (IP) | VT/AbuseIPDB (free) |
+| `domain_history` | domain | DNS/поддомены/NS (SecurityTrails) | SecurityTrails (free) |
+| `crypto_address` | crypto | баланс/активность BTC (blockchain.info) и ETH (ethplorer) | — ✅ |
+| `archive` | url | ближайший снимок Wayback (сохранение доказательств) | — ✅ |
+| `email_gravatar` | email | Gravatar + пивот в домен | — |
+| `email_mx` | email | MX/SPF/DMARC + детект одноразовых доменов (DNS) | — ✅ |
 | `email_leaks` | email | HIBP (присутствие в утечках) | HIBP_API_KEY |
 | `phone_info` | phone | оператор/регион/тип (офлайн phonenumbers) | — ✅ |
-| `username_sweep` | username | чек ника по ~48 платформам (категории) + опц. датасет WhatsMyName | — ✅ |
+| `username_sweep` | username | чек ника со скорингом 0–100%; быстрый (21 платф.) / deep (WhatsMyName 700+, env `USERNAME_DEEP=1`) | — ✅ |
 
 ✅ = бесплатно, без ключа, работает «из коробки».
 
-> **username_sweep, глубокий режим:** положи датасет [WhatsMyName](https://github.com/WebBreacher/WhatsMyName)
-> в `scripts/data/wmn-data.json` — энричер автоматически прогонит сотни сайтов поверх
-> курируемого списка (maigret-уровень, keyless). Без файла — работает на курируемых ~48.
-> Файл не коммитим (см. `.gitignore`).
-
 ## Бэклог энричеров (по образцу каталога flowsint)
 
-**Осталось (нишевое/платное):** `phone.carrier` глубже (платный HLR), `crypto`-трассировка
-(кластеризация), `hudsonrock`/`dehashed` (infostealer/leaks — осторожно по этике, платно).
-✅ Закрыто: `ip.ports`, `crypto` (BTC/ETH/TRON), `ioc` (VT/AbuseIPDB/GreyNoise),
-`archive_page` (Wayback), `whois_history` (WhoisXML + deep-links).
-
-Аналитика (`analyze.py` / `osint_graph.py`) уже учитывает эти сигналы: вредоносный IOC
-(VT/AbuseIPDB/GreyNoise) → риск HIGH, CVE на портах → MEDIUM, широкая поверхность → вывод,
-даты Wayback/CVE → таймлайн.
+🇺🇦 **Украина:** `opendatabot` расширить (CourtService/PenaltyService/RealEstateService по ключу);
+`youcontrol` (YouScore API, по ключу).
+**Осталось:** `username.maigret` (глубже sweep), `phone.carrier`, `domain.ssl/whois`.
+✅ Реализованы keyless: `ip.ports` (Shodan InternetDB), `ip_reputation` (GreyNoise),
+`typosquat` (свой генератор + DNS), `crypto_address` (BTC/ETH), `archive` (Wayback).
+✅ Реализованы key-gated (graceful без ключа): `ioc` (VirusTotal + AbuseIPDB),
+`domain_history` (SecurityTrails). Все ключи free-tier — см. `.env.example`.
 
 > Принцип: пассивные источники по умолчанию; ключи и .env — вне репозитория;
 > результаты складывай в `cases/<slug>/data/`. Полный список flowsint-энричеров как

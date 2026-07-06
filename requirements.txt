@@ -1,8 +1,0 @@
-# Vercel (@vercel/python) ставит зависимости из этого файла (корень репо).
-# Веб-оболочка + движок энричеров. uvicorn на Vercel не нужен (ASGI даёт платформа).
-fastapi>=0.110
-markdown>=3.6
-requests>=2.31
-dnspython>=2.4
-python-dotenv>=1.0
-phonenumbers>=8.13

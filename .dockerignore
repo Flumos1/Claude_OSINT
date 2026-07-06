@@ -1,0 +1,14 @@
+.git
+**/node_modules
+**/.venv
+**/__pycache__
+**/*.pyc
+web/static/dist
+scripts/wmn-data.json
+data
+**/osint.db
+cases/*/data
+cases/*/screenshots
+*.log
+.claude
+memory

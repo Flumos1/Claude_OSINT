@@ -1,0 +1,13 @@
+# Пример reverse-proxy с автоматическим TLS (Let's Encrypt) через Caddy.
+# Замени osint.example.com на свой домен. Запуск: caddy run --config ./deploy/Caddyfile
+#
+# Caddy сам получит и продлит сертификат. Платформу запусти рядом
+# (docker compose up -d) — она слушает 127.0.0.1:8000.
+
+osint.example.com {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:8000 {
+        # SSE (прогресс скана) — не буферизовать, держать соединение:
+        flush_interval -1
+    }
+}
