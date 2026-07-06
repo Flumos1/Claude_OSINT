@@ -20,6 +20,52 @@ const api = {
   cases: () => fetch("/api/cases").then(r => r.json()),
 };
 
+/* ---------- Экспорт отчётов (MD / DOCX / PDF-печать) ---------- */
+function downloadBlob(blob, name) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function printHtml(html, title) {
+  const w = window.open("", "_blank");
+  if (!w) { alert("Разрешите всплывающие окна для печати в PDF."); return; }
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title || "report")}</title>
+    <style>body{font:14px/1.55 Inter,system-ui,sans-serif;max-width:820px;margin:2rem auto;padding:0 1.2rem;color:#111}
+    h1{font-size:1.6rem} h2{font-size:1.25rem;margin-top:1.5rem;border-bottom:1px solid #ddd;padding-bottom:3px}
+    h3{font-size:1.05rem} code{background:#f2f2f2;padding:1px 5px;border-radius:3px} a{color:#0b60d6;word-break:break-all}
+    ul{padding-left:1.2rem} blockquote{color:#555;border-left:3px solid #ccc;margin:0;padding-left:12px}</style></head>
+    <body>${html}<script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script></body></html>`);
+  w.document.close();
+}
+async function fetchReport(endpoint, body, fmt) {
+  const r = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...body, format: fmt }) });
+  if (!r.ok) { let m = r.statusText; try { m = (await r.json()).detail || m; } catch {} throw new Error(m); }
+  if (fmt === "docx") {
+    const name = (r.headers.get("Content-Disposition") || "").match(/filename="(.+?)"/)?.[1] || "report.docx";
+    downloadBlob(await r.blob(), name);
+  } else if (fmt === "html") {
+    const { html, filename } = await r.json(); printHtml(html, filename);
+  } else {
+    const { markdown, filename } = await r.json();
+    downloadBlob(new Blob([markdown], { type: "text/markdown" }), (filename || "report") + ".md");
+  }
+}
+function exportBar(endpoint, getBody) {
+  const wrap = el("div", "report-actions");
+  wrap.innerHTML = `<span class="ra-lbl">Отчёт:</span>
+    <button class="btn sm" data-fmt="md">↓ MD</button>
+    <button class="btn sm" data-fmt="docx">↓ DOCX</button>
+    <button class="btn sm" data-fmt="html">🖨 PDF</button>`;
+  wrap.querySelectorAll("button").forEach(b => b.onclick = async () => {
+    const old = b.textContent; b.textContent = "…"; b.disabled = true;
+    try { await fetchReport(endpoint, getBody(), b.dataset.fmt); }
+    catch (e) { alert("Экспорт не удался: " + e.message); }
+    finally { b.textContent = old; b.disabled = false; }
+  });
+  return wrap;
+}
+
 /* ---------- Router ---------- */
 const views = {};
 function show(view) {
@@ -83,6 +129,7 @@ async function runEnrich(type, value, country, navigate) {
   try {
     const g = await api.enrich({ type, value, country });
     state.lastGraph = g;
+    state.lastEnrichInput = { type, value, country };
     renderResult(g);
   } catch (e) {
     fp.innerHTML = `<div class="finding"><span class="f-tag ERROR">ERROR</span><div class="f-main">${esc(e.message)}</div></div>`;
@@ -92,6 +139,14 @@ async function runEnrich(type, value, country, navigate) {
 function renderResult(g) {
   $("#result-title").textContent = `${g.input.type}: ${g.input.value}` + (g.input.country ? ` [${g.input.country}]` : "");
   const empty = $("#result-empty"); if (empty) empty.hidden = true;
+
+  // экспорт-бар (аналитический бриф) — рядом с заголовком
+  const head = $("#enrich-actions");
+  if (head) {
+    head.innerHTML = "";
+    head.hidden = false;
+    head.appendChild(exportBar("/api/enrich/report", () => state.lastEnrichInput || g.input));
+  }
 
   // Findings
   const fp = $('[data-pane="findings"]');
@@ -164,17 +219,6 @@ views.person = () => {
   });
 };
 
-async function downloadReport() {
-  if (!state.lastPersonQuery) return;
-  const r = await fetch("/api/person/report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(state.lastPersonQuery) });
-  const { markdown } = await r.json();
-  const blob = new Blob([markdown], { type: "text/markdown" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `dossier-${(state.lastPersonQuery.name || "person").replace(/\s+/g, "_")}.md`;
-  a.click(); URL.revokeObjectURL(a.href);
-}
-
 function renderDossier(d) {
   $("#basis-bar").textContent = d.basis;
   const out = $("#person-result");
@@ -187,7 +231,7 @@ function renderDossier(d) {
       ${items.map(r => `<div class="reg-item"><span class="reg-name"><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a></span><span class="reg-note">${esc(r.note)}</span></div>`).join("")}</div>`).join("");
   out.innerHTML = `
     <div class="panel dossier-section"><div class="panel-head"><h2>Варианты написания (recall)</h2>
-      <button class="btn" id="dl-report" type="button">↓ Отчёт (.md)</button></div>
+      <div id="person-actions"></div></div>
       <div class="panel-body variants">${d.name_variants.map(v => `<span class="badge">${esc(v)}</span>`).join("")}</div></div>
     <div class="panel dossier-section"><div class="panel-head"><h2>Находки (живые источники)</h2></div>
       <div class="panel-body">${findings || '<span class="muted">Прямых находок нет — используй ссылки на реестры ниже.</span>'}</div></div>
@@ -197,7 +241,8 @@ function renderDossier(d) {
       <div class="panel-body">${regs}</div></div>
     <div class="panel dossier-section"><div class="panel-head"><h2>Правовые ограничения</h2></div>
       <div class="panel-body"><ul class="notes-list">${d.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul></div></div>`;
-  $("#dl-report")?.addEventListener("click", downloadReport);
+  const pa = $("#person-actions");
+  if (pa && state.lastPersonQuery) pa.appendChild(exportBar("/api/person/report", () => state.lastPersonQuery));
   drawGraph(d);
 }
 
@@ -221,6 +266,7 @@ views.recon = () => {
       hops: parseInt($("#r-hops").value, 10) || 2,
     };
     if (!body.basis) { $("#recon-basis-warn").classList.add("warn-flash"); return; }
+    state.lastReconBody = body;
     const out = $("#recon-result");
     out.innerHTML = `<div class="panel"><div class="panel-body loading"><span class="spin">◴</span> Многошаговый пивотинг и корреляция…</div></div>`;
     try { renderRecon(await api.recon(body)); }
@@ -253,6 +299,7 @@ function renderRecon(d) {
       ${["CONFIRMED", "PROBABLE", "POSSIBLE"].map(t =>
         `<div class="tier-card"><span class="tier-emoji">${TIER[t].emoji}</span><b>${counts[t]}</b><span>${t}</span></div>`).join("")}
       <div class="tier-card">${riskBadge}<span>узлов ${d.nodes.length} · связей ${d.edges.length}</span></div>
+      <div class="tier-card" id="recon-actions"></div>
     </div>
     <div class="panel dossier-section"><div class="panel-head"><h2>Граф личности (цвет = достоверность связи)</h2></div>
       <div class="panel-body"><div id="graph"></div>
@@ -266,6 +313,8 @@ function renderRecon(d) {
     <div class="panel dossier-section"><div class="panel-head"><h2>⚪ POSSIBLE (${counts.POSSIBLE}) — проверяй вручную</h2></div><div class="panel-body">${ledgerRows("POSSIBLE")}</div></div>
     ${timeline ? `<div class="panel dossier-section"><div class="panel-head"><h2>🗓️ Таймлайн</h2></div><div class="panel-body"><ul class="notes-list">${timeline}${anomalies}</ul></div></div>` : ""}`;
 
+  const ra = $("#recon-actions");
+  if (ra && state.lastReconBody) ra.appendChild(exportBar("/api/recon/report", () => state.lastReconBody));
   drawReconGraph(d, tierOf);
 }
 
@@ -292,6 +341,25 @@ function drawReconGraph(d, tierOf) {
     interaction: { hover: true }, nodes: { shapeProperties: { borderRadius: 6 } },
   });
 }
+
+/* ---------- Спецобъекты (aircraft / vessel / ioc) ---------- */
+views.special = () => {
+  $$("#special-tabs .tab").forEach(t => t.onclick = () => {
+    $$("#special-tabs .tab").forEach(x => x.classList.toggle("active", x === t));
+    $$(".spane").forEach(p => p.hidden = p.dataset.spane !== t.dataset.stab);
+  });
+  $$(".special-form").forEach(f => f.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const type = f.dataset.type;
+    const value = f.querySelector('[name="value"]').value.trim();
+    if (!value) return;
+    if (type === "ioc") {
+      runEnrich(f.querySelector('[name="ioctype"]').value, value, null, true);
+    } else {
+      runEnrich(type, value, null, true);  // aircraft/vessel — нейтральные (страна не нужна)
+    }
+  }));
+};
 
 /* ---------- Sources ---------- */
 views.sources = () => {

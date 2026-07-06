@@ -306,3 +306,14 @@ table.tbl td.mono, table.tbl .mono { font-family: var(--font-mono); font-size: 1
 .graph-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
 .anomaly { color: var(--warn); font-weight: 500; }
 #graph { height: 460px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); }
+
+/* --- Экспорт-отчёты + Спецобъекты --- */
+.report-actions { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.report-actions .ra-lbl { font-size: 12px; color: var(--text-muted); }
+.report-actions-slot { margin-left: auto; }
+.btn.sm { padding: 4px 9px; font-size: 12px; line-height: 1.2; }
+.special-form { margin-top: 14px; }
+.special-form .hint { margin: 0 0 12px; font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.sf-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.sf-row .grow { flex: 1 1 240px; }
+.spane { margin-top: 4px; }

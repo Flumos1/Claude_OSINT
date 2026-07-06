@@ -26,6 +26,7 @@
         <a class="nav-item" data-view="enrich"><span class="ic">⊹</span> Обогащение</a>
         <a class="nav-item" data-view="person"><span class="ic">⚇</span> Поиск ФЛ</a>
         <a class="nav-item" data-view="recon"><span class="ic">✷</span> Recon-граф</a>
+        <a class="nav-item" data-view="special"><span class="ic">⛯</span> Спецобъекты</a>
         <a class="nav-item" data-view="sources"><span class="ic">▤</span> Источники</a>
         <a class="nav-item" data-view="skills"><span class="ic">◇</span> Скилы</a>
         <a class="nav-item" data-view="cases"><span class="ic">▥</span> Кейсы</a>
@@ -90,6 +91,7 @@
         <div class="panel result-panel">
           <div class="panel-head">
             <h2 id="result-title">Результат</h2>
+            <div class="report-actions-slot" id="enrich-actions" hidden></div>
             <div class="tabs" id="result-tabs">
               <button class="tab active" data-tab="findings">Факты</button>
               <button class="tab" data-tab="graph">Граф</button>
@@ -156,6 +158,50 @@
         </div>
       </form>
       <div id="recon-result"></div>
+    </section>
+  </template>
+
+  <template id="tpl-special">
+    <section class="view">
+      <div class="view-head"><h1>Спецобъекты</h1>
+        <p class="muted">Профильные объекты: авиа/морской трекинг <b>активов</b> (не людей на борту) и threat-intel по индикаторам. Результат — на вкладке «Обогащение».</p></div>
+      <div class="tabs" id="special-tabs">
+        <button class="tab active" data-stab="aircraft">✈ Воздушное судно</button>
+        <button class="tab" data-stab="vessel">⚓ Морское судно</button>
+        <button class="tab" data-stab="ioc">🛡 Threat-IOC</button>
+      </div>
+
+      <div class="spane" data-spane="aircraft">
+        <form class="panel special-form" data-type="aircraft">
+          <div class="panel-body">
+            <p class="hint">⚖️ Легальный трекинг ВС как <b>актива</b> (санкции, корпоративный DD «чей борт»), не пассажиров. Ввод: бортовой номер (UR-PSR, N628TS) или ICAO24-hex (a1b2c3).</p>
+            <div class="sf-row"><input class="field grow" name="value" placeholder="UR-PSR / N628TS / ICAO24-hex" required>
+              <button class="btn primary" type="submit">Трекинг борта</button></div>
+          </div>
+        </form>
+      </div>
+
+      <div class="spane" data-spane="vessel" hidden>
+        <form class="panel special-form" data-type="vessel">
+          <div class="panel-body">
+            <p class="hint">⚖️ Трекинг судна как <b>актива</b> (санкционный мониторинг, судовладелец), не экипажа. Ввод: IMO (7 цифр, с контр. цифрой), MMSI (9 цифр) или название.</p>
+            <div class="sf-row"><input class="field grow" name="value" placeholder="IMO 9074729 / 273&hellip; (MMSI) / название" required>
+              <button class="btn primary" type="submit">Трекинг судна</button></div>
+          </div>
+        </form>
+      </div>
+
+      <div class="spane" data-spane="ioc" hidden>
+        <form class="panel special-form" data-type="ioc">
+          <div class="panel-body">
+            <p class="hint">🛡 Репутация индикатора (VirusTotal + AbuseIPDB + GreyNoise). Без ключей — deep-ссылки на веб-версии; с ключами (scripts/.env) — живой вердикт. Защитный фокус.</p>
+            <div class="sf-row">
+              <select class="field" name="ioctype"><option value="ip">IP</option><option value="domain">домен</option><option value="url">URL</option></select>
+              <input class="field grow" name="value" placeholder="1.2.3.4 / evil.example / https://…" required>
+              <button class="btn primary" type="submit">Проверить репутацию</button></div>
+          </div>
+        </form>
+      </div>
     </section>
   </template>
 

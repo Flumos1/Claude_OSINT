@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -33,8 +33,23 @@ sys.path.insert(0, str(SCRIPTS))
 from enrich import run as enrich_run  # noqa: E402
 from enrichers.base import ENTITY_TYPES, REGISTRY  # noqa: E402
 from person_search import dossier_to_markdown, search_person  # noqa: E402
-from person_recon import build as recon_build  # noqa: E402
+from person_recon import build as recon_build, report_markdown as recon_markdown  # noqa: E402
 import osint_graph as OG  # noqa: E402
+from docx_lite import markdown_to_docx  # noqa: E402
+
+
+def _report_response(markdown: str, fmt: str, filename: str):
+    """Отдать отчёт в нужном формате: md (JSON), docx (файл) или html (JSON для печати→PDF)."""
+    fmt = (fmt or "md").lower()
+    if fmt == "docx":
+        data = markdown_to_docx(markdown)
+        return Response(content=data,
+                        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        headers={"Content-Disposition": f'attachment; filename="{filename}.docx"'})
+    if fmt == "html":
+        body = md.markdown(markdown, extensions=["tables", "fenced_code"]) if md else f"<pre>{markdown}</pre>"
+        return JSONResponse({"html": body, "filename": filename})
+    return JSONResponse({"markdown": markdown, "filename": filename})
 
 try:
     import markdown as md
@@ -115,6 +130,22 @@ def api_enrich(req: EnrichReq):
     return enrich_run(req.type, req.value.strip(), req.country)
 
 
+class EnrichReportReq(EnrichReq):
+    format: str = "md"  # md | docx | html
+
+
+@app.post("/api/enrich/report")
+def api_enrich_report(req: EnrichReportReq):
+    """Аналитический бриф по сущности: собрать граф → resolve → analyze → timeline → отчёт."""
+    if req.type not in ENTITY_TYPES:
+        raise HTTPException(400, f"Неизвестный тип: {req.type}")
+    graph = enrich_run(req.type, req.value.strip(), req.country)
+    graph = OG.resolve_entities(graph)
+    md_text = OG.brief_markdown(graph, OG.analyze(graph), OG.timeline(graph))
+    safe = re.sub(r"[^\w.-]+", "_", f"{req.type}-{req.value.strip()}")[:60]
+    return _report_response(md_text, req.format, f"brief-{safe}")
+
+
 class PersonReq(BaseModel):
     name: str
     dob: str | None = None
@@ -133,13 +164,18 @@ def api_person(req: PersonReq):
                          req.phone or None, req.username or None, tuple(req.countries))
 
 
+class PersonReportReq(PersonReq):
+    format: str = "md"
+
+
 @app.post("/api/person/report")
-def api_person_report(req: PersonReq):
+def api_person_report(req: PersonReportReq):
     if not req.name.strip():
         raise HTTPException(400, "Пустое ФИО")
     d = search_person(req.name.strip(), req.dob, req.rnokpp, req.email or None,
                       req.phone or None, req.username or None, tuple(req.countries))
-    return JSONResponse({"markdown": dossier_to_markdown(d)})
+    safe = re.sub(r"[^\w.-]+", "_", req.name.strip())[:50]
+    return _report_response(dossier_to_markdown(d), req.format, f"dossier-{safe}")
 
 
 class ReconReq(BaseModel):
@@ -175,6 +211,32 @@ def api_recon(req: ReconReq):
     d["analysis"] = OG.analyze(d)
     d["timeline"] = OG.timeline(d)
     return d
+
+
+class ReconReportReq(ReconReq):
+    format: str = "md"
+
+
+@app.post("/api/recon/report")
+def api_recon_report(req: ReconReportReq):
+    if not req.basis.strip():
+        raise HTTPException(400, "Укажите правовое основание (basis) — это обязательно.")
+
+    def split(s):
+        return [x.strip() for x in (s or "").split(",") if x.strip()]
+
+    seeds = {
+        "_name": (req.name or "").strip() or None,
+        "email": split(req.email),
+        "username": list(dict.fromkeys(split(req.username) + split(req.github))),
+        "phone": split(req.phone),
+        "domain": split(req.domain),
+    }
+    d = recon_build(seeds, max(1, min(req.hops, 3)))
+    d["analysis"] = OG.analyze(d)
+    d["timeline"] = OG.timeline(d)
+    safe = re.sub(r"[^\w.-]+", "_", (req.name or "person"))[:50]
+    return _report_response(recon_markdown(d), req.format, f"recon-{safe}")
 
 
 @app.get("/api/sources/{code}")

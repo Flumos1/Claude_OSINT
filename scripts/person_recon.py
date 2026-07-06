@@ -240,6 +240,45 @@ def render(d: dict) -> str:
     return "\n".join(out)
 
 
+def report_markdown(d: dict) -> str:
+    """Recon-дичье → Markdown-отчёт (для DOCX/PDF-экспорта и osint-report)."""
+    tiers = {"CONFIRMED": [], "PROBABLE": [], "POSSIBLE": []}
+    for e in d.get("ledger", []):
+        tiers.get(e["tier"], []).append(e)
+    an = d.get("analysis") or {}
+    tl = d.get("timeline") or {}
+    seeds = ", ".join(f"{k}={v}" for k, v in (d.get("seeds") or {}).items() if v) or "—"
+    L = ["# Досье личности (recon)", "",
+         f"> {BASIS}", "",
+         f"**Сиды:** {seeds}  ", f"**Собрано:** {d.get('collected_at', '?')}  ",
+         f"**Узлов:** {len(d.get('nodes', []))} · **связей:** {len(d.get('edges', []))}", ""]
+    if an.get("summary"):
+        L.append(f"**Итоговый риск:** {an['summary'].get('risk_level', '?')}\n")
+    for tier, emoji in (("CONFIRMED", "🟢"), ("PROBABLE", "🟡"), ("POSSIBLE", "⚪")):
+        L += [f"## {emoji} {tier} ({len(tiers[tier])}) — достоверность связи", ""]
+        for e in tiers[tier]:
+            L.append(f"- **{e['type']}** {e['value']} — хоп {e['hop']}, {e['reason']}")
+        if not tiers[tier]:
+            L.append("- —")
+        L.append("")
+    if an.get("risks"):
+        L += ["## ⚠️ Риск-флаги", ""]
+        L += [f"- `{r['level']}` **{r['label']}** — {r['evidence']}" for r in an["risks"]]
+        L.append("")
+    if an.get("insights"):
+        L += ["## 🧠 Выводы и гипотезы", ""]
+        L += [f"- **{i['label']}** {i['text']}" for i in an["insights"]]
+        L.append("")
+    if tl.get("events"):
+        L += ["## 🗓️ Таймлайн", ""]
+        L += [f"- **{e['date']}** — {e['what']}" for e in tl["events"][:20]]
+        L += [f"- ⚑ аномалия: {a}" for a in tl.get("anomalies", [])]
+        L.append("")
+    L += ["---", "> Открытые источники на дату сбора. Совпадение ника/имени ≠ тот же человек; "
+          "ключевые связи требуют ≥2 подтверждений. Не является юридическим заключением."]
+    return "\n".join(L)
+
+
 def main():
     ap = argparse.ArgumentParser(description="Многошаговая разведка личности (открытые источники)")
     ap.add_argument("--basis", help="правовое основание (обязательно для запуска)")
