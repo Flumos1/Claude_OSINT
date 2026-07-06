@@ -41,7 +41,7 @@
         <form class="globalsearch" id="globalsearch" autocomplete="off">
           <select id="g-type" class="field" title="Тип сущности"></select>
           <select id="g-country" class="field" title="Страна"></select>
-          <input id="g-value" class="field grow" type="text" placeholder="Значение: ЄДРПОУ, домен, email, ПІБ, IP, ник…">
+          <input id="g-value" class="field grow" type="text" placeholder="Значение: ЄДРПОУ, домен, email, ПІБ, IP, ник, crypto-адрес, борт, IMO…">
           <button class="btn primary" type="submit">Обогатить</button>
         </form>
         <button class="iconbtn" id="theme-toggle" title="Тема">◐</button>
@@ -67,8 +67,11 @@
             <button class="chip" data-quick="domain||example.com">Домен</button>
             <button class="chip" data-quick="person|ua|Зеленський Володимир Олександрович">🇺🇦 Персона (ПІБ)</button>
             <button class="chip" data-quick="email||test@example.com">Email</button>
-            <button class="chip" data-quick="ip||8.8.8.8">IP</button>
+            <button class="chip" data-quick="ip||8.8.8.8">IP (порты/репутация)</button>
             <button class="chip" data-quick="username||torvalds">Username</button>
+            <button class="chip" data-quick="crypto||1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">₿ Crypto</button>
+            <button class="chip" data-quick="aircraft||UR-PSR">✈ Борт</button>
+            <button class="chip" data-quick="vessel||IMO 9074729">⚓ Судно</button>
           </div>
         </div>
         <div class="panel">
