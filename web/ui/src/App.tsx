@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { detect, type Guess } from "@/lib/detect";
-import { enrich, startJob, streamJob, type EnrichResult, type Finding } from "@/lib/api";
+import { enrich, startJob, streamJob, fetchReport, type EnrichResult, type Finding, type ReportFmt } from "@/lib/api";
 import { suggest, type Suggestion } from "@/lib/suggest";
 import ToolsView from "@/ToolsView";
 import CasesView from "@/CasesView";
 import PersonView from "@/PersonView";
+import ReconView from "@/ReconView";
 import UsersView from "@/UsersView";
 import SettingsView from "@/SettingsView";
 import Graph from "@/Graph";
@@ -14,6 +15,7 @@ const NAV = [
   { id: "search", label: "Поиск" },
   { id: "graph", label: "Граф" },
   { id: "person", label: "Поиск ФЛ" },
+  { id: "recon", label: "Recon-граф" },
   { id: "tools", label: "Инструменты" },
   { id: "cases", label: "Кейсы" },
   { id: "settings", label: "Настройки" },
@@ -271,6 +273,7 @@ export default function App() {
           )
         )}
         {view === "person" && <PersonView />}
+        {view === "recon" && <ReconView />}
         {view === "users" && <UsersView />}
         {view === "settings" && <SettingsView />}
 
@@ -323,6 +326,20 @@ export default function App() {
                 <Stat label="Высокая ≥78%" value={found.filter((f) => gradeTone(f.confidence) === "success").length} color="var(--success)" />
                 <Stat label="Проверить" value={found.filter((f) => gradeTone(f.confidence) !== "success").length} color="var(--warning)" />
                 <Stat label="Энричеров" value={result.enrichers_run.length} />
+              </div>
+
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
+                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Отчёт:</span>
+                {(["md", "docx", "html"] as ReportFmt[]).map((f) => (
+                  <button key={f} onClick={() => fetchReport("/api/enrich/report", result.input, f).catch((e) => setError(String(e.message || e)))}
+                    style={{ fontSize: 12, padding: "5px 10px", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface-1)", color: "var(--text-secondary)", cursor: "pointer" }}>
+                    {f === "html" ? "🖨 PDF" : "↓ " + f.toUpperCase()}
+                  </button>
+                ))}
+                <button onClick={saveCurrent}
+                  style={{ fontSize: 12, padding: "5px 10px", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface-1)", color: "var(--accent)", cursor: "pointer", marginLeft: 4 }}>
+                  💾 В кейс
+                </button>
               </div>
 
               <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexDirection: mobile ? "column" : "row" }}>

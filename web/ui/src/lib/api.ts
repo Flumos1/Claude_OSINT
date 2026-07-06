@@ -42,6 +42,77 @@ export async function enrich(
   return r.json();
 }
 
+// --- Отчёты (MD / DOCX / PDF-печать) ------------------------------------------
+export type ReportFmt = "md" | "docx" | "html";
+
+function downloadBlob(blob: Blob, name: string) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function printHtml(html: string, title: string) {
+  const w = window.open("", "_blank");
+  if (!w) { alert("Разрешите всплывающие окна для печати в PDF."); return; }
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
+    <style>body{font:14px/1.55 Inter,system-ui,sans-serif;max-width:820px;margin:2rem auto;padding:0 1.2rem;color:#111}
+    h1{font-size:1.6rem}h2{font-size:1.25rem;margin-top:1.5rem;border-bottom:1px solid #ddd;padding-bottom:3px}
+    code{background:#f2f2f2;padding:1px 5px;border-radius:3px}a{color:#0b60d6;word-break:break-all}
+    ul{padding-left:1.2rem}blockquote{color:#555;border-left:3px solid #ccc;margin:0;padding-left:12px}</style></head>
+    <body>${html}<script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script></body></html>`);
+  w.document.close();
+}
+
+// Универсальная выгрузка отчёта: endpoint + тело + формат. Скачивает или печатает.
+export async function fetchReport(endpoint: string, body: unknown, fmt: ReportFmt): Promise<void> {
+  const r = await fetch(endpoint, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...(body as object), format: fmt }),
+  });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || `HTTP ${r.status}`);
+  if (fmt === "docx") {
+    const name = (r.headers.get("Content-Disposition") || "").match(/filename="(.+?)"/)?.[1] || "report.docx";
+    downloadBlob(await r.blob(), name);
+  } else if (fmt === "html") {
+    const { html, filename } = await r.json();
+    printHtml(html, filename || "report");
+  } else {
+    const { markdown, filename } = await r.json();
+    downloadBlob(new Blob([markdown], { type: "text/markdown" }), `${filename || "report"}.md`);
+  }
+}
+
+// --- Recon (многошаговая разведка личности) -----------------------------------
+export interface ReconReq {
+  basis: string; name?: string; email?: string; username?: string;
+  github?: string; phone?: string; domain?: string; hops?: number;
+}
+
+export interface LedgerRow {
+  id: string; type: string; value: string; hop: number;
+  tier: "CONFIRMED" | "PROBABLE" | "POSSIBLE"; reason: string; rels: string[];
+}
+
+export interface ReconResult {
+  collected_at: string; seeds: Record<string, unknown>;
+  nodes: GraphNode[]; edges: GraphEdge[]; findings: Finding[];
+  ledger: LedgerRow[]; dorks: { label: string; url: string }[];
+  analysis?: { summary?: { risk_level: string };
+    risks?: { level: string; label: string; evidence: string }[];
+    insights?: { label: string; text: string }[] };
+  timeline?: { events: { date: string; what: string }[]; anomalies: string[] };
+}
+
+export async function recon(req: ReconReq): Promise<ReconResult> {
+  const r = await fetch("/api/recon", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(req),
+  });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || `HTTP ${r.status}`);
+  return r.json();
+}
+
 export interface CaseSummary { slug: string; brief: string; saves: number }
 export interface CaseDetail extends EnrichResult { slug: string; saves: number }
 
