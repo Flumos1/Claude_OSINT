@@ -99,13 +99,18 @@ python image_tools.py compare <url_avatar1> <url_avatar2>
 | `ua_person_links` | person [ua] | валидация РНОКПП + ссылки (ЄРБ/АСВП/reyestr…) | — |
 | `nazk_declarations` | person [ua] | **НАЗК API** (декларації посадовців) | — ✅ |
 | `ru_company_links` | company [ru] | валидация ИНН/ОГРН + ссылки на реестры РФ | — |
+| `ru_person_links` | person [ru] | валидация ИНН-физлица + ссылки (ФССП/Федресурс/суды/розыск) | — |
 | `domain_recon` | domain | RDAP/crt.sh/DNS/Wayback + дорки | — |
 | `website` | domain | SSL-сертификат, security-заголовки, сервер, robots/security.txt (web-check-стиль) | — ✅ |
 | `typosquat` | domain | типо-варианты домена + IDN-омоглифы, DNS-проверка живых (dnstwist-стиль) | — ✅ |
+| `archive_site` / `archive_page` | domain / url | история Wayback (снапшоты, первый/последний, таймлайн) | — ✅ |
+| `ioc_reputation` | ip / domain / url | репутация индикатора: VT + AbuseIPDB + GreyNoise (без ключа — deep-ссылки) | VT/AbuseIPDB/GreyNoise |
 | `secrets_scan` | url | скан страницы на утёкшие секреты (24 паттерна) | — ✅ |
+| `crypto_addr` | crypto | BTC/ETH баланс + транзакции (blockstream/blockchair) + эксплореры | — ✅ |
 | `aircraft_track` | aircraft | ⚖️ трекинг ВС (актива, не пассажира): OpenSky состояние + рейсы по ICAO24 + реестры | — ✅ |
 | `vessel_track` | vessel | ⚖️ трекинг судна (актива, не экипажа): валидация IMO + реестры (Equasis/MarineTraffic) | — ✅ |
 | `ip_geo_asn` | ip | гео/ASN (ip-api) | — |
+| `ip_ports` | ip | открытые порты/CVE/hostnames (Shodan InternetDB, пассивно) | — ✅ |
 | `github_user` | username | ник → ім'я/компанія/сайт/twitter + email з публічних комітів + аватар-пивот | — ✅ |
 | `email_gravatar` | email | Gravatar (профиль, аккаунты) + пивот в домен + аватар/reverse-image | — |
 | `email_accounts` | email | существование по email (Gravatar/Libravatar, штатно) + tool-пивот holehe/epieos | — ✅ |
@@ -122,9 +127,9 @@ python image_tools.py compare <url_avatar1> <url_avatar2>
 
 ## Бэклог энричеров (по образцу каталога flowsint)
 
-**Нейтральные (которых нет, приоритет по flowsint):** `domain.ssl/whois_history`,
-`ip.ports` (Shodan InternetDB — keyless), `phone.carrier`, `crypto`,
-`ioc` (VT/AbuseIPDB/GreyNoise), `archive_page` (Wayback CDX).
+**Осталось:** `domain.whois_history`, `phone.carrier` (глубже), `crypto` — TRON/BNB/трассировка,
+`hudsonrock` (infostealer, осторожно по этике). ✅ Закрыто в этой партии: `ip.ports`, `crypto`
+(BTC/ETH), `ioc` (VT/AbuseIPDB/GreyNoise), `archive_page` (Wayback CDX).
 
 > Принцип: пассивные источники по умолчанию; ключи и .env — вне репозитория;
 > результаты складывай в `cases/<slug>/data/`. Полный список flowsint-энричеров как
