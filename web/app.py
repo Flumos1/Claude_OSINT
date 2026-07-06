@@ -359,6 +359,12 @@ app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 
 
 if __name__ == "__main__":
+    import os
+
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    # Порт/хост из окружения (PORT/HOST) — по умолчанию 127.0.0.1:8000.
+    # Позволяет превью/оркестратору назначить свободный порт и не ловить «порт занят».
+    host = os.getenv("HOST", "127.0.0.1")
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run(app, host=host, port=port)

@@ -6,7 +6,8 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["app.py"],
       "cwd": "web",
-      "port": 8000
+      "port": 8000,
+      "autoPort": true
     }
   ]
 }
