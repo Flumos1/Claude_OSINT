@@ -17,6 +17,7 @@ UA = {"User-Agent": "osint-crypto/1.0"}
 
 BTC_RX = re.compile(r"^(bc1[0-9a-z]{8,87}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$")
 ETH_RX = re.compile(r"^0x[0-9a-fA-F]{40}$")
+TRON_RX = re.compile(r"^T[1-9A-HJ-NP-Za-km-z]{33}$")
 
 
 def _explorers(kind: str, addr: str) -> dict[str, str]:
@@ -24,6 +25,9 @@ def _explorers(kind: str, addr: str) -> dict[str, str]:
         return {"Blockstream": f"https://blockstream.info/address/{addr}",
                 "Mempool": f"https://mempool.space/address/{addr}",
                 "Blockchair": f"https://blockchair.com/bitcoin/address/{addr}"}
+    if kind == "tron":
+        return {"Tronscan": f"https://tronscan.org/#/address/{addr}",
+                "OKLink": f"https://www.oklink.com/trx/address/{addr}"}
     return {"Etherscan": f"https://etherscan.io/address/{addr}",
             "Blockchair": f"https://blockchair.com/ethereum/address/{addr}"}
 
@@ -41,10 +45,15 @@ def enrich_crypto(value: str) -> EnricherResult:
     elif ETH_RX.match(addr):
         kind = "eth"
         root.attrs["chain"] = "ethereum"
+        res.fact("Формат 0x… — Ethereum-сумісний. Той самий адрес може існувати і в "
+                 "BNB Smart Chain / Polygon (перевір відповідні експлорери).", "crypto")
         _eth(res, root, addr)
+    elif TRON_RX.match(addr):
+        kind = "tron"
+        root.attrs["chain"] = "tron"
+        _tron(res, root, addr)
     else:
-        res.fact("Адреса не розпізнана як BTC/ETH (перевір формат або мережу — TRON/BNB тощо).",
-                 "crypto")
+        res.fact("Адреса не розпізнана як BTC/ETH/TRON (перевір формат або мережу).", "crypto")
         return res
 
     for name, url in _explorers(kind, addr).items():
@@ -88,5 +97,24 @@ def _eth(res, root, addr):
         root.attrs.update({"balance_eth": f"{bal:.6f}", "tx_count": txn})
         res.fact(f"ETH баланс: {bal:.6f} ETH; транзакцій: {txn}; "
                  f"ERC-20 токенів: {len(tokens)}", "ethplorer.io", "B2")
+    except Exception as e:
+        res.error = str(e)
+
+
+def _tron(res, root, addr):
+    # Tronscan публичный API — keyless
+    try:
+        r = requests.get("https://apilist.tronscanapi.com/api/account",
+                         params={"address": addr}, headers=UA, timeout=TIMEOUT)
+        if r.status_code != 200:
+            res.error = f"HTTP {r.status_code} (tronscan)"
+            return
+        d = r.json()
+        bal = float(d.get("balance") or 0) / 1e6  # SUN → TRX
+        txn = d.get("totalTransactionCount") or d.get("transactions") or 0
+        tokens = d.get("trc20token_balances") or d.get("tokens") or []
+        root.attrs.update({"balance_trx": f"{bal:.6f}", "tx_count": txn})
+        res.fact(f"TRX баланс: {bal:.6f} TRX; транзакцій: {txn}; TRC-20 токенів: {len(tokens)}",
+                 "tronscan.org", "B2")
     except Exception as e:
         res.error = str(e)

@@ -24,6 +24,7 @@ from . import (  # noqa: F401
     username_enr,
     vessel_enr,
     website_enr,
+    whois_history_enr,
     youcontrol_enr,
 )
 from .base import ENTITY_TYPES, EnricherResult, enrichers_for  # noqa: F401

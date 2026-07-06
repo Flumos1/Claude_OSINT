@@ -104,9 +104,10 @@ python image_tools.py compare <url_avatar1> <url_avatar2>
 | `website` | domain | SSL-сертификат, security-заголовки, сервер, robots/security.txt (web-check-стиль) | — ✅ |
 | `typosquat` | domain | типо-варианты домена + IDN-омоглифы, DNS-проверка живых (dnstwist-стиль) | — ✅ |
 | `archive_site` / `archive_page` | domain / url | история Wayback (снапшоты, первый/последний, таймлайн) | — ✅ |
+| `whois_history` | domain | история WHOIS (смена регистранта/NS); без ключа — deep-ссылки | WHOISXML_API_KEY |
 | `ioc_reputation` | ip / domain / url | репутация индикатора: VT + AbuseIPDB + GreyNoise (без ключа — deep-ссылки) | VT/AbuseIPDB/GreyNoise |
 | `secrets_scan` | url | скан страницы на утёкшие секреты (24 паттерна) | — ✅ |
-| `crypto_addr` | crypto | BTC/ETH баланс + транзакции (blockstream/blockchair) + эксплореры | — ✅ |
+| `crypto_addr` | crypto | BTC/ETH/TRON баланс + транзакции (blockstream/ethplorer/tronscan) + эксплореры | — ✅ |
 | `aircraft_track` | aircraft | ⚖️ трекинг ВС (актива, не пассажира): OpenSky состояние + рейсы по ICAO24 + реестры | — ✅ |
 | `vessel_track` | vessel | ⚖️ трекинг судна (актива, не экипажа): валидация IMO + реестры (Equasis/MarineTraffic) | — ✅ |
 | `ip_geo_asn` | ip | гео/ASN (ip-api) | — |
@@ -127,9 +128,14 @@ python image_tools.py compare <url_avatar1> <url_avatar2>
 
 ## Бэклог энричеров (по образцу каталога flowsint)
 
-**Осталось:** `domain.whois_history`, `phone.carrier` (глубже), `crypto` — TRON/BNB/трассировка,
-`hudsonrock` (infostealer, осторожно по этике). ✅ Закрыто в этой партии: `ip.ports`, `crypto`
-(BTC/ETH), `ioc` (VT/AbuseIPDB/GreyNoise), `archive_page` (Wayback CDX).
+**Осталось (нишевое/платное):** `phone.carrier` глубже (платный HLR), `crypto`-трассировка
+(кластеризация), `hudsonrock`/`dehashed` (infostealer/leaks — осторожно по этике, платно).
+✅ Закрыто: `ip.ports`, `crypto` (BTC/ETH/TRON), `ioc` (VT/AbuseIPDB/GreyNoise),
+`archive_page` (Wayback), `whois_history` (WhoisXML + deep-links).
+
+Аналитика (`analyze.py` / `osint_graph.py`) уже учитывает эти сигналы: вредоносный IOC
+(VT/AbuseIPDB/GreyNoise) → риск HIGH, CVE на портах → MEDIUM, широкая поверхность → вывод,
+даты Wayback/CVE → таймлайн.
 
 > Принцип: пассивные источники по умолчанию; ключи и .env — вне репозитория;
 > результаты складывай в `cases/<slug>/data/`. Полный список flowsint-энричеров как

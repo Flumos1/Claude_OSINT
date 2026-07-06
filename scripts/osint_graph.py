@@ -105,6 +105,11 @@ RISK_RULES = [
     (re.compile(r"зареєстрован.*(схож|typosquat)|тайпсквот.*зарег", re.I), "MEDIUM", "Тайпсквоттинг бренда"),
     (re.compile(r"банкрот|bankrupt|ліквідац|liquidat", re.I), "MEDIUM", "Банкротство/ликвидация"),
     (re.compile(r"у розшуку|wanted person|в розыске", re.I), "HIGH", "Розыск"),
+    # threat-intel: вредоносный индикатор (ioc_reputation) — malicious/high-confidence
+    (re.compile(r"malicious=[1-9]|класифікація=malicious|classification=malicious|confidence=(?:[5-9]\d|100)%", re.I),
+     "HIGH", "Вредоносный индикатор (threat-intel)"),
+    # открытая поверхность атаки: CVE на сервисах IP (ip_ports)
+    (re.compile(r"уразлив\w*\s*cve|\bCVE-\d{4}-\d{3,}", re.I), "MEDIUM", "Открытые уязвимости (CVE)"),
 ]
 
 # Источники-указатели/инструкции (не наблюдения) — исключаются из риск-детекции.
@@ -192,6 +197,14 @@ def analyze(graph: dict) -> dict:
                              "text": f"{c['type']} «{c['value']}» — центральный узел (связей: {c['degree']}); "
                                      f"вероятная точка контроля/пивота.",
                              "source": "osint_graph.centrality"})
+    # широкая поверхность атаки: у IP много открытых портов (ip_ports)
+    for nid, n in nodes.items():
+        ports = (n.get("attrs") or {}).get("open_ports")
+        if isinstance(ports, str) and ports.count(",") >= 5:
+            insights.append({"label": "INFERENCE",
+                             "text": f"IP «{n['value']}»: широкая поверхность ({ports.count(',')+1} портов) — "
+                                     f"проверь необходимость каждого сервиса.",
+                             "source": "osint_graph.attack_surface"})
 
     risk_level = "HIGH" if any(r["level"] == "HIGH" for r in risks) else (
         "MEDIUM" if risks else "LOW")
