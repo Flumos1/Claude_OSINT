@@ -322,5 +322,23 @@ table.tbl td.mono, table.tbl .mono { font-family: var(--font-mono); font-size: 1
 .case-save { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; padding-left: 8px; border-left: 1px solid var(--border); flex-wrap: wrap; }
 .field.sm { padding: 4px 8px; font-size: 12px; width: 130px; }
 .case-msg { font-size: 12px; }
-.case-msg.ok { color: var(--ok, #1a7f37); }
-.case-msg.err { color: var(--danger, #b4231f); }
+.case-msg.ok { color: var(--ok); }
+.case-msg.err { color: var(--bad); }
+
+/* --- Подсказки, баннер, логин --- */
+.search-wrap { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.search-hint { font-size: 12px; color: var(--text-muted); min-height: 15px; padding-left: 2px; line-height: 1.4; }
+.ro-banner { display: none; margin: 0 var(--pad, 22px); padding: 8px 12px; font-size: 13px; border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--warn) 12%, transparent); color: var(--warn);
+  border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent); }
+body.read-only .ro-banner { display: block; }
+.f-conf { cursor: help; border-bottom: 1px dotted currentColor; }
+
+.main.locked .topbar { visibility: hidden; }
+.login-view { display: flex; justify-content: center; align-items: flex-start; padding-top: 8vh; }
+.login-card { width: 340px; max-width: 92vw; text-align: center; background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 32px 28px; box-shadow: 0 8px 30px rgba(0,0,0,.08); }
+.login-card h1 { margin: 14px 0 6px; font-size: 1.4rem; }
+.login-card form { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.login-card .brand-mark.lg { width: 52px; height: 52px; font-size: 20px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
+.login-msg.err { color: var(--bad); font-size: 13px; min-height: 16px; margin-top: 8px; }

@@ -6,8 +6,27 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const linkify = (s) => esc(s).replace(/(https?:\/\/[^\s)]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+/* Admiralty-код достоверности → человекочитаемая подсказка (tooltip). */
+const CONF_SRC = { A: "надёжный источник", B: "обычно надёжный", C: "довольно надёжный", D: "не всегда надёжный", E: "ненадёжный", F: "оценить нельзя" };
+const CONF_INFO = { 1: "подтверждено", 2: "вероятно правда", 3: "возможно правда", 4: "сомнительно", 5: "неправдоподобно", 6: "оценить нельзя" };
+const confTip = (c) => { const m = /^([A-F])([1-6])$/.exec(c || ""); return m ? `Admiralty ${c}: источник — ${CONF_SRC[m[1]]}; факт — ${CONF_INFO[m[2]]}` : ""; };
 
 const state = { meta: null, lastGraph: null, network: null };
+
+/* Подсказки по типам сущностей: пример значения + краткое пояснение. */
+const HINTS = {
+  company: { ex: "14360570", tip: "🇺🇦 ЄДРПОУ (8 цифр) · 🇷🇺 ИНН/ОГРН (выбери страну RU) · или название" },
+  person: { ex: "Зеленський Володимир Олександрович", tip: "ПІБ/ФИО (+ страна). ⚖️ только при правовом основании" },
+  domain: { ex: "example.com", tip: "домен/сайт → DNS, SSL, поддомены, Wayback, типосквоттинг, репутация" },
+  ip: { ex: "8.8.8.8", tip: "IP → гео/ASN + открытые порты/CVE (Shodan InternetDB) + репутация" },
+  email: { ex: "name@example.com", tip: "email → Gravatar, аккаунты, утечки (HIBP по ключу), пивот в домен" },
+  username: { ex: "torvalds", tip: "ник → GitHub (имя/почта/сайт), профили на ~48 платформах" },
+  phone: { ex: "+380671234567", tip: "телефон → оператор/регион/тип (офлайн, без ключа)" },
+  crypto: { ex: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa", tip: "BTC / ETH (0x…) / TRON (T…) → баланс, транзакции, эксплореры" },
+  url: { ex: "https://example.com/page", tip: "URL → скан секретов, история Wayback, репутация (IOC)" },
+  aircraft: { ex: "UR-PSR", tip: "✈ бортовой номер / ICAO24-hex → трекинг ВС (актива, не пассажира)" },
+  vessel: { ex: "IMO 9074729", tip: "⚓ IMO / MMSI / название → трекинг судна (актива, не экипажа)" },
+};
 
 /* ---------- API ---------- */
 const api = {
@@ -64,7 +83,7 @@ function exportBar(endpoint, getBody, caseSource, getCaseData) {
     catch (e) { alert("Экспорт не удался: " + e.message); }
     finally { b.textContent = old; b.disabled = false; }
   });
-  if (caseSource) {
+  if (caseSource && !state.meta?.read_only) {
     const cs = el("span", "case-save");
     cs.innerHTML = `<input class="field sm" list="cases-dl" placeholder="слаг кейса" title="Существующий или новый (a-z0-9-)">
       <datalist id="cases-dl"></datalist>
@@ -179,7 +198,7 @@ function renderResult(g) {
         <span class="f-tag ${esc(f.label)}">${esc(f.label)}</span>
         <div class="f-main">
           <div class="f-text">${linkify(f.text)}</div>
-          <div class="f-meta">${esc(f.source)}${f.confidence ? ` · <span class="f-conf">${esc(f.confidence)}</span>` : ""}</div>
+          <div class="f-meta">${esc(f.source)}${f.confidence ? ` · <span class="f-conf" title="${esc(confTip(f.confidence))}">${esc(f.confidence)}</span>` : ""}</div>
         </div>
       </div>`).join("");
 
@@ -247,7 +266,7 @@ function renderDossier(d) {
   const findings = d.findings.map(f => `
     <div class="finding"><span class="f-tag ${esc(f.label)}">${esc(f.label)}</span>
       <div class="f-main"><div class="f-text">${linkify(f.text)}</div>
-        <div class="f-meta">${esc(f.source)}${f.confidence ? ` · <span class="f-conf">${esc(f.confidence)}</span>` : ""}</div></div></div>`).join("");
+        <div class="f-meta">${esc(f.source)}${f.confidence ? ` · <span class="f-conf" title="${esc(confTip(f.confidence))}">${esc(f.confidence)}</span>` : ""}</div></div></div>`).join("");
   const regs = Object.entries(d.registries).map(([c, items]) => `
     <div class="reg-group"><h3>${c === "ua" ? "🇺🇦 Украина" : c === "ru" ? "🇷🇺 Россия" : "🌍 Международные"}</h3>
       ${items.map(r => `<div class="reg-item"><span class="reg-name"><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a></span><span class="reg-note">${esc(r.note)}</span></div>`).join("")}</div>`).join("");
@@ -421,6 +440,51 @@ function fillSelectors() {
   const t = $("#g-type"); t.innerHTML = state.meta.entity_types.map(x => `<option value="${x}">${x}</option>`).join("");
   const c = $("#g-country");
   c.innerHTML = `<option value="">— страна —</option>` + state.meta.countries.map(x => `<option value="${x.code}"${x.code === "ua" ? " selected" : ""}>${x.flag} ${x.code}</option>`).join("");
+  const applyHint = () => {
+    const h = HINTS[t.value] || { ex: "", tip: "" };
+    $("#g-value").placeholder = h.ex ? `напр. ${h.ex}` : "значение";
+    const sh = $("#search-hint"); if (sh) sh.textContent = h.tip || "";
+  };
+  t.onchange = applyHint; applyHint();
+}
+
+function renderLogin(msg) {
+  const c = $("#content");
+  document.querySelector(".main")?.classList.add("locked");
+  c.innerHTML = `<section class="view login-view"><div class="login-card">
+    <div class="brand-mark lg">OS</div>
+    <h1>Claude OSINT</h1>
+    <p class="muted">Доступ защищён. Введите пароль (переменная окружения ACCESS_PASSWORD).</p>
+    <form id="login-form" autocomplete="off">
+      <input id="login-pw" class="field" type="password" placeholder="Пароль" required autofocus>
+      <button class="btn primary" type="submit">Войти</button>
+    </form>
+    <div class="login-msg err">${msg ? esc(msg) : ""}</div>
+  </div></section>`;
+  $("#login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      const r = await fetch("/api/login", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: $("#login-pw").value }) });
+      if (!r.ok) { $(".login-msg").textContent = "Неверный пароль"; return; }
+      document.querySelector(".main")?.classList.remove("locked");
+      boot();
+    } catch { $(".login-msg").textContent = "Ошибка сети"; }
+  });
+}
+
+async function boot() {
+  document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  let meta;
+  try {
+    const r = await fetch("/api/meta");
+    if (r.status === 401) { renderLogin(); return; }
+    meta = await r.json();
+  } catch { renderLogin("Сервер недоступен"); return; }
+  state.meta = meta;
+  document.body.classList.toggle("read-only", !!meta.read_only);
+  fillSelectors();
+  show(location.hash.slice(1) || "dashboard");
 }
 
 $("#globalsearch").addEventListener("submit", (e) => {
@@ -435,9 +499,4 @@ $("#theme-toggle").onclick = () => {
   if (state.lastGraph && !$('[data-pane="graph"]').hidden) drawGraph(state.lastGraph);
 };
 
-(async function boot() {
-  document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
-  state.meta = await api.meta();
-  fillSelectors();
-  show(location.hash.slice(1) || "dashboard");
-})();
+boot();

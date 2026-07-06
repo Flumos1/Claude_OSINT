@@ -39,14 +39,18 @@
     <!-- Main -->
     <div class="main">
       <header class="topbar">
-        <form class="globalsearch" id="globalsearch" autocomplete="off">
-          <select id="g-type" class="field" title="Тип сущности"></select>
-          <select id="g-country" class="field" title="Страна"></select>
-          <input id="g-value" class="field grow" type="text" placeholder="Значение: ЄДРПОУ, домен, email, ПІБ, IP, ник, crypto-адрес, борт, IMO…">
-          <button class="btn primary" type="submit">Обогатить</button>
-        </form>
-        <button class="iconbtn" id="theme-toggle" title="Тема">◐</button>
+        <div class="search-wrap">
+          <form class="globalsearch" id="globalsearch" autocomplete="off">
+            <select id="g-type" class="field" title="Тип сущности"></select>
+            <select id="g-country" class="field" title="Страна (для страновых реестров)"></select>
+            <input id="g-value" class="field grow" type="text" placeholder="значение">
+            <button class="btn primary" type="submit">Обогатить</button>
+          </form>
+          <div class="search-hint" id="search-hint"></div>
+        </div>
+        <button class="iconbtn" id="theme-toggle" title="Переключить тему">◐</button>
       </header>
+      <div class="ro-banner" id="ro-banner">🔒 Демо-режим (serverless, read-only): обогащение, анализ и экспорт работают; «Сохранить в кейс» доступно только в локальном запуске.</div>
 
       <main class="content" id="content"><!-- views injected --></main>
     </div>
@@ -102,7 +106,8 @@
           <div class="panel-body" id="result-body">
             <div class="empty" id="result-empty">
               <div class="empty-mark">⊹</div>
-              <p>Введите сущность в строке поиска сверху и нажмите «Обогатить».</p>
+              <p>Выберите <b>тип</b> и введите <b>значение</b> в строке сверху — под ней подсказка с примером. Затем «Обогатить».</p>
+              <p class="muted">Результат: <b>Факты</b> (с источником и оценкой достоверности), <b>Граф</b> связей, <b>Сущности</b>, сырой <b>JSON</b>. Отчёт выгружается в MD/DOCX/PDF.</p>
             </div>
             <div class="tabpane" data-pane="findings" hidden></div>
             <div class="tabpane" data-pane="graph" hidden><div id="graph"></div></div>
