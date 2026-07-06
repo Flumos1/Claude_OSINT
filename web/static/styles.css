@@ -317,3 +317,10 @@ table.tbl td.mono, table.tbl .mono { font-family: var(--font-mono); font-size: 1
 .sf-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .sf-row .grow { flex: 1 1 240px; }
 .spane { margin-top: 4px; }
+
+/* --- Сохранение в кейс --- */
+.case-save { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; padding-left: 8px; border-left: 1px solid var(--border); flex-wrap: wrap; }
+.field.sm { padding: 4px 8px; font-size: 12px; width: 130px; }
+.case-msg { font-size: 12px; }
+.case-msg.ok { color: var(--ok, #1a7f37); }
+.case-msg.err { color: var(--danger, #b4231f); }

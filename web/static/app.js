@@ -18,6 +18,7 @@ const api = {
   source: (code) => fetch(`/api/sources/${code}`).then(r => r.json()),
   skills: () => fetch("/api/skills").then(r => r.json()),
   cases: () => fetch("/api/cases").then(r => r.json()),
+  caseSave: (body) => fetch("/api/case/save", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(async r => { if (!r.ok) throw new Error((await r.json()).detail || r.statusText); return r.json(); }),
 };
 
 /* ---------- Экспорт отчётов (MD / DOCX / PDF-печать) ---------- */
@@ -51,18 +52,38 @@ async function fetchReport(endpoint, body, fmt) {
     downloadBlob(new Blob([markdown], { type: "text/markdown" }), (filename || "report") + ".md");
   }
 }
-function exportBar(endpoint, getBody) {
+function exportBar(endpoint, getBody, caseSource, getCaseData) {
   const wrap = el("div", "report-actions");
   wrap.innerHTML = `<span class="ra-lbl">Отчёт:</span>
     <button class="btn sm" data-fmt="md">↓ MD</button>
     <button class="btn sm" data-fmt="docx">↓ DOCX</button>
     <button class="btn sm" data-fmt="html">🖨 PDF</button>`;
-  wrap.querySelectorAll("button").forEach(b => b.onclick = async () => {
+  wrap.querySelectorAll("button[data-fmt]").forEach(b => b.onclick = async () => {
     const old = b.textContent; b.textContent = "…"; b.disabled = true;
     try { await fetchReport(endpoint, getBody(), b.dataset.fmt); }
     catch (e) { alert("Экспорт не удался: " + e.message); }
     finally { b.textContent = old; b.disabled = false; }
   });
+  if (caseSource) {
+    const cs = el("span", "case-save");
+    cs.innerHTML = `<input class="field sm" list="cases-dl" placeholder="слаг кейса" title="Существующий или новый (a-z0-9-)">
+      <datalist id="cases-dl"></datalist>
+      <button class="btn sm" data-case>💾 В кейс</button>
+      <span class="case-msg muted"></span>`;
+    const inp = cs.querySelector("input"), msg = cs.querySelector(".case-msg");
+    api.cases().then(list => cs.querySelector("datalist").innerHTML = list.map(c => `<option value="${esc(c.slug)}">`).join("")).catch(() => {});
+    cs.querySelector("[data-case]").onclick = async () => {
+      const slug = inp.value.trim();
+      if (!slug) { inp.focus(); return; }
+      msg.textContent = "…";
+      try {
+        const r = await api.caseSave({ slug, source: caseSource, data: getCaseData() });
+        msg.textContent = `✓ ${r.slug}: ${r.saved.length} файла`;
+        msg.className = "case-msg ok";
+      } catch (e) { msg.textContent = "✗ " + e.message; msg.className = "case-msg err"; }
+    };
+    wrap.appendChild(cs);
+  }
   return wrap;
 }
 
@@ -145,7 +166,8 @@ function renderResult(g) {
   if (head) {
     head.innerHTML = "";
     head.hidden = false;
-    head.appendChild(exportBar("/api/enrich/report", () => state.lastEnrichInput || g.input));
+    head.appendChild(exportBar("/api/enrich/report", () => state.lastEnrichInput || g.input,
+      "enrich", () => state.lastGraph));
   }
 
   // Findings
@@ -242,7 +264,8 @@ function renderDossier(d) {
     <div class="panel dossier-section"><div class="panel-head"><h2>Правовые ограничения</h2></div>
       <div class="panel-body"><ul class="notes-list">${d.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul></div></div>`;
   const pa = $("#person-actions");
-  if (pa && state.lastPersonQuery) pa.appendChild(exportBar("/api/person/report", () => state.lastPersonQuery));
+  if (pa && state.lastPersonQuery) pa.appendChild(exportBar("/api/person/report", () => state.lastPersonQuery,
+    "person", () => state.lastPersonQuery));
   drawGraph(d);
 }
 
@@ -314,7 +337,8 @@ function renderRecon(d) {
     ${timeline ? `<div class="panel dossier-section"><div class="panel-head"><h2>🗓️ Таймлайн</h2></div><div class="panel-body"><ul class="notes-list">${timeline}${anomalies}</ul></div></div>` : ""}`;
 
   const ra = $("#recon-actions");
-  if (ra && state.lastReconBody) ra.appendChild(exportBar("/api/recon/report", () => state.lastReconBody));
+  if (ra && state.lastReconBody) ra.appendChild(exportBar("/api/recon/report", () => state.lastReconBody,
+    "recon", () => state.lastRecon));
   drawReconGraph(d, tierOf);
 }
 
