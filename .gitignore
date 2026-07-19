@@ -9,9 +9,6 @@ cases/*/screenshots/
 scripts/.env
 *.key
 
-# Внешние датасеты (скачиваются скриптами, не код)
-scripts/wmn-data.json
-
 # Python
 scripts/.venv/
 web/.venv/

@@ -10,4 +10,6 @@ cases/*/screenshots/
 web/server.log
 scripts/.env
 *.key
-.claude/plans/
+.claude/
+.vercel/
+.vercel-global/

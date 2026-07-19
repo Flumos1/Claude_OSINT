@@ -41,12 +41,14 @@ python enrich.py company 7707083893 -c ru # 🇷🇺 ИНН/ОГРН
 python enrich.py ip 8.8.8.8
 python enrich.py email user@example.com
 
-# Username: быстрый чек (21 платформа) со скорингом уверенности 0–100%
+# Username: быстрый чек — 21 куратируемая + WhatsMyName (~700, датасет уже в репо)
 python enrich.py username johndoe
-# Глубокий чек (700+ сайтов WhatsMyName, параллельно) — сначала скачать датасет
-python fetch_wmn.py
+# Глубокий чек — тот же пул + Maigret + Sherlock (датасеты тоже в репо, дедуп по домену)
 $env:USERNAME_DEEP=1; python enrich.py username johndoe   # PowerShell
-# Тюнинг deep: USERNAME_DEEP_MAX (лимит сайтов), USERNAME_DEEP_WORKERS, USERNAME_DEEP_TIMEOUT
+# Обновить датасеты (не обязательно — уже закоммичены и бандлятся на Vercel):
+python fetch_wmn.py
+# Тюнинг: USERNAME_POOL_CAP, USERNAME_FAST_BUDGET/USERNAME_DEEP_BUDGET (wall-clock, безопасно
+# под Vercel maxDuration), USERNAME_DEEP_WORKERS, USERNAME_DEEP_TIMEOUT
 ```
 
 > **Скоринг username:** каждое попадание получает уверенность 0–100% и Admiralty-оценку
@@ -91,7 +93,8 @@ $env:USERNAME_DEEP=1; python enrich.py username johndoe   # PowerShell
 | `email_mx` | email | MX/SPF/DMARC + детект одноразовых доменов (DNS) | — ✅ |
 | `email_leaks` | email | HIBP (присутствие в утечках) | HIBP_API_KEY |
 | `phone_info` | phone | оператор/регион/тип (офлайн phonenumbers) | — ✅ |
-| `username_sweep` | username | чек ника со скорингом 0–100%; быстрый (21 платф.) / deep (WhatsMyName 700+, env `USERNAME_DEEP=1`) | — ✅ |
+| `username_sweep` | username | чек ника со скорингом 0–100%; быстрый (21 платф. + WhatsMyName ~700) / deep (+ Maigret + Sherlock, дедуп, env `USERNAME_DEEP=1`) | — ✅ |
+| `holehe_accounts` | email | email → ~120 сервисов (signup/reset-формы), in-process (не CLI) | — ✅ |
 
 ✅ = бесплатно, без ключа, работает «из коробки».
 
@@ -99,7 +102,7 @@ $env:USERNAME_DEEP=1; python enrich.py username johndoe   # PowerShell
 
 🇺🇦 **Украина:** `opendatabot` расширить (CourtService/PenaltyService/RealEstateService по ключу);
 `youcontrol` (YouScore API, по ключу).
-**Осталось:** `username.maigret` (глубже sweep), `phone.carrier`, `domain.ssl/whois`.
+**Осталось:** `phone.carrier`, `domain.ssl/whois`.
 ✅ Реализованы keyless: `ip.ports` (Shodan InternetDB), `ip_reputation` (GreyNoise),
 `typosquat` (свой генератор + DNS), `crypto_address` (BTC/ETH), `archive` (Wayback).
 ✅ Реализованы key-gated (graceful без ключа): `ioc` (VirusTotal + AbuseIPDB),
