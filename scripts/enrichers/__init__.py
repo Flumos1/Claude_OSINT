@@ -1,6 +1,7 @@
 """Энричеры (архитектура по мотивам flowsint). Импорт регистрирует их в REGISTRY."""
 from . import (  # noqa: F401
     aircraft_enr,
+    amass_enr,
     archive_enr,
     blackbird_enr,
     crypto_enr,

@@ -109,6 +109,7 @@ python fetch_wmn.py
 | `trufflehog_scan` | url (git-репо) | trufflehog (верификация активных секретов) | — |
 | `blackbird` | username | Blackbird (изолированный venv) | — |
 | `ghunt_email` | email | GHunt | **разовый `ghunt login`** |
+| `amass` | domain | Amass (engine+enum+subs, клиент-серверный) | **`AMASS_ENABLE=1`** (выключен по умолчанию — минуты, не секунды) |
 
 ✅ = бесплатно, без ключа, работает «из коробки».
 

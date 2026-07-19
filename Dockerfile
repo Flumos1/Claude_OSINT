@@ -1,7 +1,7 @@
 # Multi-stage: собрать React-фронтенд (Node), затем запустить FastAPI (Python)
 # + вшить реальные OSINT-бинарники (theHarvester, subfinder, gitleaks, trufflehog,
-# Blackbird, GHunt) — доступны ТОЛЬКО в Docker-образе (Vercel serverless их не
-# поддерживает: нет shell/read-only FS). Контекст сборки — корень репозитория.
+# Blackbird, GHunt, Amass) — доступны ТОЛЬКО в Docker-образе (Vercel serverless их
+# не поддерживает: нет shell/read-only FS). Контекст сборки — корень репозитория.
 
 FROM node:24-alpine AS ui
 WORKDIR /ui
@@ -22,8 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # --- Go-бинарники (статические, с GitHub Releases; архитектура amd64/arm64) ---
 RUN set -eu; \
     case "$(dpkg --print-architecture)" in \
-      amd64) SF_ARCH=amd64; GL_ARCH=x64; TH_ARCH=amd64 ;; \
-      arm64) SF_ARCH=arm64; GL_ARCH=arm64; TH_ARCH=arm64 ;; \
+      amd64) SF_ARCH=amd64; GL_ARCH=x64; TH_ARCH=amd64; AM_ARCH=amd64 ;; \
+      arm64) SF_ARCH=arm64; GL_ARCH=arm64; TH_ARCH=arm64; AM_ARCH=arm64 ;; \
       *) echo "unsupported arch"; exit 1 ;; \
     esac; \
     curl -sSfL "https://github.com/projectdiscovery/subfinder/releases/latest/download/subfinder_$(curl -sSfL https://api.github.com/repos/projectdiscovery/subfinder/releases/latest | grep -oP '"tag_name":\s*"v\K[^"]+')_linux_${SF_ARCH}.zip" -o /tmp/subfinder.zip \
@@ -31,7 +31,11 @@ RUN set -eu; \
     curl -sSfL "https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_$(curl -sSfL https://api.github.com/repos/gitleaks/gitleaks/releases/latest | grep -oP '"tag_name":\s*"v\K[^"]+')_linux_${GL_ARCH}.tar.gz" -o /tmp/gitleaks.tgz \
       && tar -xzf /tmp/gitleaks.tgz -C /usr/local/bin gitleaks && chmod +x /usr/local/bin/gitleaks && rm /tmp/gitleaks.tgz; \
     curl -sSfL "https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_$(curl -sSfL https://api.github.com/repos/trufflesecurity/trufflehog/releases/latest | grep -oP '"tag_name":\s*"v\K[^"]+')_linux_${TH_ARCH}.tar.gz" -o /tmp/trufflehog.tgz \
-      && tar -xzf /tmp/trufflehog.tgz -C /usr/local/bin trufflehog && chmod +x /usr/local/bin/trufflehog && rm /tmp/trufflehog.tgz
+      && tar -xzf /tmp/trufflehog.tgz -C /usr/local/bin trufflehog && chmod +x /usr/local/bin/trufflehog && rm /tmp/trufflehog.tgz; \
+    mkdir -p /opt/amass \
+      && curl -sSfL "https://github.com/owasp-amass/amass/releases/latest/download/amass_linux_${AM_ARCH}.tar.gz" -o /tmp/amass.tgz \
+      && tar -xzf /tmp/amass.tgz -C /opt/amass --strip-components=1 \
+      && chmod +x /opt/amass/amass && rm /tmp/amass.tgz
 
 # --- theHarvester (изолированный venv — пинованные fastapi/uvicorn конфликтуют
 #     с нашим web/requirements.txt, поэтому НЕ в общее окружение) ---
@@ -64,10 +68,12 @@ COPY cases/ cases/
 COPY --from=ui /static/dist web/static/dist
 
 # Реальные бинарники + изолированные venvs из слоя tools (theHarvester/subfinder/
-# gitleaks/trufflehog/Blackbird/GHunt) — делают Docker-only энричеры (scripts/enrichers/
-# theharvester_enr.py, subfinder_enr.py, gitleaks_enr.py, trufflehog_enr.py,
-# blackbird_enr.py, ghunt_enr.py) реально рабочими. На Vercel этих файлов нет —
-# энричеры сами определяют отсутствие бинарника и мягко деградируют (не ошибка).
+# gitleaks/trufflehog/Blackbird/GHunt/Amass) — делают Docker-only энричеры
+# (scripts/enrichers/theharvester_enr.py, subfinder_enr.py, gitleaks_enr.py,
+# trufflehog_enr.py, blackbird_enr.py, ghunt_enr.py, amass_enr.py) реально рабочими.
+# На Vercel этих файлов нет — энричеры сами определяют отсутствие бинарника и
+# мягко деградируют (не ошибка). Amass дополнительно выключен по умолчанию
+# (AMASS_ENABLE=1 чтобы включить) — клиент-серверный скан на минуты, не секунды.
 COPY --from=tools /usr/local/bin/subfinder /usr/local/bin/subfinder
 COPY --from=tools /usr/local/bin/gitleaks /usr/local/bin/gitleaks
 COPY --from=tools /usr/local/bin/trufflehog /usr/local/bin/trufflehog
@@ -75,9 +81,11 @@ COPY --from=tools /usr/local/bin/ghunt /usr/local/bin/ghunt
 COPY --from=tools /opt/pipx /opt/pipx
 COPY --from=tools /opt/theharvester-venv /opt/theharvester-venv
 COPY --from=tools /opt/blackbird /opt/blackbird
+COPY --from=tools /opt/amass /opt/amass
 ENV THEHARVESTER_BIN=/opt/theharvester-venv/bin/theHarvester
 ENV BLACKBIRD_DIR=/opt/blackbird
 ENV BLACKBIRD_PYTHON=/opt/blackbird/.venv/bin/python
+ENV AMASS_BIN=/opt/amass/amass
 # git нужен gitleaks_enr.py для клонирования репозитория перед сканом
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
