@@ -243,7 +243,7 @@ export async function fetchKeys(): Promise<KeyStatus[]> {
 
 export interface CuratedTool {
   id: string; name: string; category: string; url: string;
-  method: string; install: string; note?: string;
+  method: string; install: string; note?: string; builtin?: boolean;
 }
 
 export async function fetchCurated(): Promise<{ tools: CuratedTool[]; meta: Record<string, string> }> {

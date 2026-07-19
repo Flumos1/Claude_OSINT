@@ -31,3 +31,4 @@ Thumbs.db
 
 # Локальный конфиг превью (машинно-специфичные пути)
 .claude/launch.json
+.vercel-global/

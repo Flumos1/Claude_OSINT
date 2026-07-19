@@ -10,6 +10,7 @@ from . import (  # noqa: F401
     email_leaks_enr,
     email_mx_enr,
     github_user_enr,
+    holehe_enr,
     ioc_enr,
     ip_enr,
     ip_ports_enr,

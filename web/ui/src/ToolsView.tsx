@@ -43,17 +43,27 @@ export default function ToolsView() {
           <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>★ Рабочие лошадки — с install-подсказкой</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10 }}>
             {curated.map((t) => (
-              <div key={t.id} style={{ background: "var(--surface-1)", border: "1px solid var(--border-strong)", borderRadius: 12, padding: "12px 14px" }}>
+              <div key={t.id} style={{ background: "var(--surface-1)", border: t.builtin ? "1px solid var(--success, #2ea043)" : "1px solid var(--border-strong)", borderRadius: 12, padding: "12px 14px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                   <a href={t.url} target="_blank" rel="noreferrer" style={{ fontSize: 14, fontWeight: 500, color: "var(--accent)", textDecoration: "none" }}>{t.name}</a>
-                  <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 20, background: "var(--surface-2)", color: "var(--text-secondary)" }}>{t.method}</span>
+                  <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 20,
+                    background: t.builtin ? "var(--success-bg, #12261b)" : "var(--surface-2)",
+                    color: t.builtin ? "var(--success, #2ea043)" : "var(--text-secondary)" }}>
+                    {t.builtin ? "✓ встроено" : t.method}
+                  </span>
                 </div>
                 {t.note && <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, margin: "4px 0 7px" }}>{t.note}</div>}
-                <div onClick={() => copy(t.install, t.id)} title="Скопировать"
-                  className="mono"
-                  style={{ fontSize: 11, background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 6, padding: "6px 8px", color: "var(--text-primary)", cursor: "pointer", wordBreak: "break-all" }}>
-                  {copied === t.id ? "✓ скопировано" : `$ ${t.install}`}
-                </div>
+                {t.builtin ? (
+                  <div style={{ fontSize: 11, color: "var(--success, #2ea043)", padding: "6px 8px" }}>
+                    Работает автоматически — не нужна установка. Просто введи email в «Обогащение».
+                  </div>
+                ) : (
+                  <div onClick={() => copy(t.install, t.id)} title="Скопировать"
+                    className="mono"
+                    style={{ fontSize: 11, background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 6, padding: "6px 8px", color: "var(--text-primary)", cursor: "pointer", wordBreak: "break-all" }}>
+                    {copied === t.id ? "✓ скопировано" : `$ ${t.install}`}
+                  </div>
+                )}
               </div>
             ))}
           </div>
