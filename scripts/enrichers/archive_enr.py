@@ -12,7 +12,10 @@ import requests
 from .base import EnricherResult, enricher
 
 CDX = "http://web.archive.org/cdx/search/cdx"
-TIMEOUT = 25
+# web.archive.org зрідка дуже повільний — 25с тут одноосібно з'їдало половину
+# бюджету domain-типу (9 послідовних енричерів, сумарний maxDuration). 12с —
+# достатньо для типового відгуку, а зависання не блокує решту ланцюжка.
+TIMEOUT = 12
 UA = {"User-Agent": "osint-archive/1.0"}
 
 

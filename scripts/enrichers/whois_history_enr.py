@@ -20,7 +20,8 @@ try:
 except Exception:
     pass
 
-TIMEOUT = 25
+# 25с одноосібно з'їдало значну частину бюджету при 9 послідовних domain-енричерах.
+TIMEOUT = 12
 UA = {"User-Agent": "osint-whois-history/1.0"}
 
 

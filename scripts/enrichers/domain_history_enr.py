@@ -10,7 +10,8 @@ import requests
 
 from .base import EnricherResult, enricher
 
-TIMEOUT = 20
+# 20с при 9 послідовних domain-енричерах — забагато для одного джерела.
+TIMEOUT = 12
 UA = {"User-Agent": "osint-domain-history/1.0"}
 BASE = "https://api.securitytrails.com/v1"
 

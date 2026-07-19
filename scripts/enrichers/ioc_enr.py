@@ -22,7 +22,9 @@ try:
 except Exception:
     pass
 
-TIMEOUT = 20
+# 20с при кількох послідовних викликах (VT+AbuseIPDB+GreyNoise, ще й серед 9
+# domain-енричерів загалом) — забагато на одне джерело.
+TIMEOUT = 12
 UA = {"User-Agent": "osint-ioc/1.0"}
 
 
