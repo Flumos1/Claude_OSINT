@@ -553,26 +553,32 @@ def api_case_report(slug: str):
         raise HTTPException(400, str(e))
 
 
-@app.get("/")
-def index():
-    # Новый UI (React/Vite) если собран, иначе — текущая SPA
-    dist_index = STATIC / "dist" / "index.html"
-    if dist_index.exists():
-        return RedirectResponse("/app/")
-    return FileResponse(STATIC / "index.html")
-
-
 @app.get("/legacy")
 def legacy():
     return FileResponse(STATIC / "index.html")
 
 
+@app.get("/app")
+@app.get("/app/")
+def app_compat_redirect():
+    """Совместимость со старыми ссылками/докой — новый UI живёт в корне."""
+    return RedirectResponse("/")
+
+
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 
-# Новый фронтенд (React/Vite) — собирается в static/dist (npm run build в web/ui)
+# Новый фронтенд (React/Vite) — собирается в static/dist (npm run build в web/ui).
+# Vite собран с base="/" (ассеты в index.html ссылаются от корня), поэтому dist
+# монтируем ИМЕННО в корень. Регистрируется последним — все явные /api/* и прочие
+# маршруты выше уже перехватят свои пути, а всё остальное упадёт сюда (html=True
+# отдаёт index.html и на "/", и на прямые пути — SPA работает через client-side state).
 _DIST = STATIC / "dist"
 if _DIST.exists():
-    app.mount("/app", StaticFiles(directory=str(_DIST), html=True), name="app")
+    app.mount("/", StaticFiles(directory=str(_DIST), html=True), name="app")
+else:
+    @app.get("/")
+    def index():
+        return FileResponse(STATIC / "index.html")
 
 
 if __name__ == "__main__":
