@@ -2,7 +2,10 @@
   "buildCommand": "npm --prefix web/ui ci && npm --prefix web/ui run build",
   "outputDirectory": "web/static/dist",
   "functions": {
-    "api/index.py": { "includeFiles": "{web,knowledge,scripts,cases,templates}/**" }
+    "api/index.py": {
+      "includeFiles": "{web,knowledge,scripts,cases,templates}/**",
+      "maxDuration": 30
+    }
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index" },
