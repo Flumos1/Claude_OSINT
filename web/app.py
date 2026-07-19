@@ -124,9 +124,10 @@ def login_submit(username: str = Form(""), password: str = Form("")):
     user = authmod.verify_login(username, password)
     if not user:
         return HTMLResponse(_LOGIN_HTML.format(err="<p class=err>Неверный логин или пароль</p>"), status_code=401)
-    token = authmod.create_session(user["id"])
+    token = authmod.create_session(user["id"], user)
     resp = RedirectResponse("/app/", status_code=303)
-    resp.set_cookie("osint_session", token, httponly=True, samesite="lax")
+    resp.set_cookie("osint_session", token, httponly=True, samesite="lax",
+                    secure=bool(os.getenv("VERCEL")))
     return resp
 
 
@@ -430,6 +431,24 @@ def api_job_stream(jid: str):
             yield f"data: {json.dumps(ev, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(gen(), media_type="text/event-stream")
+
+
+@app.get("/api/scan/stream")
+def api_scan_stream(kind: str, value: str):
+    """Старт+стрим скана в одном запросе (serverless-совместимо: без общего стейта/потоков).
+
+    Предпочтительный путь для React-клиента и Vercel. SSE: событие на строку `data:`.
+    """
+    v = value.strip()
+    if not v:
+        raise HTTPException(400, "Пустое значение")
+
+    def gen():
+        for ev in jobq.run_inline(kind, v):
+            yield f"data: {json.dumps(ev, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(gen(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 class PersonReq(BaseModel):

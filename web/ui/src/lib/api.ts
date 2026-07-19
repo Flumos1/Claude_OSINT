@@ -294,3 +294,16 @@ export function streamJob(id: string, onEvent: (e: JobEvent) => void): EventSour
   es.onerror = () => es.close();
   return es;
 }
+
+// Старт+стрим скана одним запросом (serverless-совместимо, работает и на Vercel).
+export function scanStream(kind: string, value: string, onEvent: (e: JobEvent) => void): EventSource {
+  const u = new URLSearchParams({ kind, value });
+  const es = new EventSource(`/api/scan/stream?${u.toString()}`);
+  es.onmessage = (m) => {
+    const e = JSON.parse(m.data) as JobEvent;
+    onEvent(e);
+    if (e.event === "done" || e.event === "error") es.close();
+  };
+  es.onerror = () => es.close();
+  return es;
+}

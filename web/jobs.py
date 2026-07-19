@@ -21,6 +21,22 @@ RUNNERS = {
 }
 
 
+def run_inline(kind: str, value: str):
+    """Синхронный генератор событий (для serverless: старт+стрим в одном запросе).
+
+    Работает без общего состояния/потоков — годится и для Vercel, и для локали.
+    Yields те же события, что и очередь: start/progress/done/error.
+    """
+    if kind not in RUNNERS:
+        yield {"event": "error", "error": f"Неизвестный тип: {kind}"}
+        return
+    try:
+        for ev in RUNNERS[kind](value):
+            yield ev
+    except Exception as e:  # noqa: BLE001
+        yield {"event": "error", "error": str(e)}
+
+
 def start(kind: str, value: str) -> str:
     if kind not in RUNNERS:
         raise ValueError(f"Неизвестный тип джобы: {kind}")

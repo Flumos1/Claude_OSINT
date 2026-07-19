@@ -1,0 +1,13 @@
+# Не загружать на Vercel (для CLI-деплоя; git-деплой и так уважает .gitignore)
+**/.venv/
+**/__pycache__/
+**/*.pyc
+**/node_modules/
+web/static/dist/
+data/
+cases/*/data/
+cases/*/screenshots/
+web/server.log
+scripts/.env
+*.key
+.claude/plans/

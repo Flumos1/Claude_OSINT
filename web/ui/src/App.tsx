@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { detect, type Guess } from "@/lib/detect";
-import { enrich, startJob, streamJob, fetchReport, type EnrichResult, type Finding, type ReportFmt } from "@/lib/api";
+import { enrich, scanStream, fetchReport, type EnrichResult, type Finding, type ReportFmt } from "@/lib/api";
 import { suggest, type Suggestion } from "@/lib/suggest";
 import ToolsView from "@/ToolsView";
 import CasesView from "@/CasesView";
@@ -111,8 +111,7 @@ export default function App() {
     setError(null);
     setProgress({ checked: 0, total: 0, found: 0 });
     try {
-      const id = await startJob("username_deep", value);
-      streamJob(id, (e) => {
+      scanStream("username_deep", value, (e) => {
         if (e.event === "start") setProgress({ checked: 0, total: e.total ?? 0, found: 0, mode: e.mode });
         else if (e.event === "progress") setProgress({ checked: e.checked ?? 0, total: e.total ?? 0, found: e.found ?? 0, mode: e.mode });
         else if (e.event === "done" && e.result) { setResult(e.result); setProgress(null); setLoading(false); }

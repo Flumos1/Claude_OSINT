@@ -6,7 +6,8 @@ WORKDIR /ui
 COPY web/ui/package*.json ./
 RUN npm ci
 COPY web/ui/ ./
-# vite base=/app/, outDir=../static/dist -> /static/dist в этом слое
+# FastAPI раздаёт фронтенд под /app/ → базовый путь ассетов /app/. outDir=../static/dist.
+ENV VITE_BASE=/app/
 RUN npm run build
 
 FROM python:3.12-slim AS app

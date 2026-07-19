@@ -65,3 +65,52 @@ python -m pip install -r requirements.txt -r ..\scripts\requirements.txt
 cd ui; npm install; npm run build; cd ..
 python app.py            # http://127.0.0.1:8000
 ```
+
+---
+
+# Деплой на Vercel (serverless) — полнофункционально
+
+Приложение адаптировано под Vercel **без урезания**: React-фронтенд собирается и
+раздаётся из CDN, FastAPI работает как ASGI-функция, а состояние (пользователи, сессии,
+кейсы) хранится в **Upstash Redis (KV)**. Фоновые сканы стримятся инлайново (SSE в одном
+запросе). Локальный Docker/Render при этом остаётся на SQLite/файлах — код **dual-mode**,
+выбор автоматический по наличию KV-переменных.
+
+### Что и почему
+| Компонент | Локально/Docker | На Vercel |
+|-----------|-----------------|-----------|
+| Хранилище пользователей/сессий | SQLite `data/osint.db` | **Upstash Redis KV** |
+| Кейсы (сохранённые результаты) | файлы `cases/<slug>/` | **Upstash Redis KV** |
+| Фоновый deep-скан | очередь+поток | **инлайновый SSE** `/api/scan/stream` |
+| Фронтенд | FastAPI отдаёт `/app/` | Vercel CDN отдаёт из корня |
+
+Файлы деплоя (в репозитории): `vercel.json` (сборка Vite → `web/static/dist`, роутинг
+`/api/*` → функция, SPA-fallback), `api/index.py` (ASGI-entry), корневой `requirements.txt`,
+`.vercelignore`. `web/kv.py` — REST-клиент Upstash.
+
+### Шаги
+1. **GitHub** → пуш репозитория.
+2. **Vercel → Add New → Project → Import**. Framework Preset: **Other** (всё задаёт `vercel.json`).
+   Root Directory — корень репо.
+3. **Storage → Upstash Redis** (в Vercel Marketplace, есть бесплатный тариф) → **Connect** к
+   проекту. Он сам добавит env `KV_REST_API_URL` и `KV_REST_API_TOKEN` (или
+   `UPSTASH_REDIS_REST_URL`/`_TOKEN` — код понимает оба).
+4. **Environment Variables** (Settings → Environment Variables):
+   | Переменная | Зачем | Обязательна |
+   |------------|-------|-------------|
+   | `OSINT_AUTH` = `1` | включить мульти-юзер авторизацию | **да, для публичного** |
+   | `OSINT_ADMIN_USER`, `OSINT_ADMIN_PASSWORD` | сид первого админа (создаётся при первом старте) | **да** |
+   | `VIRUSTOTAL_API_KEY`, `ABUSEIPDB_API_KEY`, `GREYNOISE_API_KEY`, `ODB_API_KEY`, `YOUCONTROL_API_KEY`, `HIBP_API_KEY`, `WHOISXML_API_KEY`, `OPENSANCTIONS_API_KEY`, `GITHUB_TOKEN` | живые данные энричеров (иначе keyless/deep-ссылки) | нет |
+
+   `VERCEL=1` платформа ставит сама (включает secure-cookie).
+5. **Deploy**. После сборки открой URL → страница `/login` (админ из env). Пользователей
+   добавляешь в разделе **«Пользователи»**.
+
+### Ограничения serverless (и как учтены)
+- **Лимит времени функции** (~60 c Hobby / ~300 c Pro). Быстрый скан (~21–48 платформ) и
+  обычные энричеры укладываются; **deep-скан** (сотни сайтов) на Hobby может обрезаться —
+  используй Pro или обычный режим.
+- **Без Upstash KV** приложение всё равно поднимется, но авторизация станет эфемерной
+  (SQLite в `/tmp`, сбрасывается между холодными стартами), а сохранение кейсов вернёт
+  ошибку. Для полноценной работы KV **обязателен** (шаг 3).
+- Ключи API — только в Environment Variables Vercel, не в репозитории.
