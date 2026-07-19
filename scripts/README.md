@@ -96,6 +96,20 @@ python fetch_wmn.py
 | `username_sweep` | username | чек ника со скорингом 0–100%; быстрый (21 платф. + WhatsMyName ~700) / deep (+ Maigret + Sherlock, дедуп, env `USERNAME_DEEP=1`) | — ✅ |
 | `holehe_accounts` | email | email → ~120 сервисов (signup/reset-формы), in-process (не CLI) | — ✅ |
 
+### Docker-only (реальные бинарники — недоступны на Vercel)
+
+Запускают внешние инструменты через subprocess; без Docker сами определяют
+отсутствие бинарника и отдают факт «недоступно», не падая. См. [DEPLOY.md](../DEPLOY.md).
+
+| Энричер | Тип | Инструмент | Настройка |
+|---------|-----|-----------|-----------|
+| `theharvester` | domain | theHarvester (изолированный venv) | — |
+| `subfinder` | domain | subfinder (статический бинарник) | — |
+| `gitleaks_scan` | url (git-репо) | gitleaks (клон + скан истории) | — |
+| `trufflehog_scan` | url (git-репо) | trufflehog (верификация активных секретов) | — |
+| `blackbird` | username | Blackbird (изолированный venv) | — |
+| `ghunt_email` | email | GHunt | **разовый `ghunt login`** |
+
 ✅ = бесплатно, без ключа, работает «из коробки».
 
 ## Бэклог энричеров (по образцу каталога flowsint)

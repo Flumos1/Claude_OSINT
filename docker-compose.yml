@@ -1,5 +1,12 @@
 # Claude OSINT — деплой одной командой: docker compose up -d --build
-# Затем открой http://localhost:8000 (редиректит на /app/).
+# Затем открой http://localhost:8000.
+#
+# Образ включает реальные OSINT-бинарники (theHarvester, subfinder, gitleaks,
+# trufflehog, Blackbird, GHunt) — работают автоматически внутри enrich (не только
+# на Vercel, где их нет). GHunt требует РАЗОВОЙ ручной авторизации оператора:
+#   docker compose exec osint ghunt login
+# (вставляєш СВОЇ Google-куки — розширення GHunt Companion або вручну). Volume
+# ghunt_creds нижче зберігає її між перезапусками/пересборками образу.
 #
 # Безопасность: данные расследований чувствительны. Для доступа извне localhost
 # задай OSINT_TOKEN (включает токен-авторизацию) и поставь перед сервисом
@@ -18,13 +25,16 @@ services:
       - OSINT_ADMIN_PASSWORD=${OSINT_ADMIN_PASSWORD:-}
       # API-токен (fallback для программных клиентов, заголовок X-Token):
       - OSINT_TOKEN=${OSINT_TOKEN:-}
-      # Глубокий username-скан (нужен датасет, см. ниже):
+      # Глубокий username-скан (WhatsMyName/Maigret/Sherlock — датасеты уже в образе):
       - USERNAME_DEEP=${USERNAME_DEEP:-}
     volumes:
       # Персистентность кейсов и собранных данных между перезапусками:
       - ./cases:/app/cases
       # БД пользователей/сессий (SQLite):
       - ./data:/app/data
-      # (опц.) датасет WhatsMyName для deep-режима — положи рядом и раскомментируй:
-      # - ./scripts/wmn-data.json:/app/scripts/wmn-data.json:ro
+      # Авторизация GHunt (creds.m) — переживает пересборку образа, но НЕ коммитится:
+      - ghunt_creds:/root/.malfrats
     restart: unless-stopped
+
+volumes:
+  ghunt_creds:

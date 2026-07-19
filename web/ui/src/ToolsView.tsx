@@ -42,20 +42,26 @@ export default function ToolsView() {
         <div style={{ marginBottom: 22 }}>
           <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>★ Рабочие лошадки — с install-подсказкой</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10 }}>
-            {curated.map((t) => (
-              <div key={t.id} style={{ background: "var(--surface-1)", border: t.builtin ? "1px solid var(--success, #2ea043)" : "1px solid var(--border-strong)", borderRadius: 12, padding: "12px 14px" }}>
+            {curated.map((t) => {
+              const accent = t.builtin ? "var(--success, #2ea043)" : t.docker_builtin ? "var(--info, #388bfd)" : undefined;
+              return (
+              <div key={t.id} style={{ background: "var(--surface-1)", border: accent ? `1px solid ${accent}` : "1px solid var(--border-strong)", borderRadius: 12, padding: "12px 14px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                   <a href={t.url} target="_blank" rel="noreferrer" style={{ fontSize: 14, fontWeight: 500, color: "var(--accent)", textDecoration: "none" }}>{t.name}</a>
                   <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 20,
-                    background: t.builtin ? "var(--success-bg, #12261b)" : "var(--surface-2)",
-                    color: t.builtin ? "var(--success, #2ea043)" : "var(--text-secondary)" }}>
-                    {t.builtin ? "✓ встроено" : t.method}
+                    background: accent ? `color-mix(in srgb, ${accent} 18%, transparent)` : "var(--surface-2)",
+                    color: accent ?? "var(--text-secondary)" }}>
+                    {t.builtin ? "✓ встроено" : t.docker_builtin ? "🐳 Docker" : t.method}
                   </span>
                 </div>
                 {t.note && <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, margin: "4px 0 7px" }}>{t.note}</div>}
                 {t.builtin ? (
-                  <div style={{ fontSize: 11, color: "var(--success, #2ea043)", padding: "6px 8px" }}>
-                    Работает автоматически — не нужна установка. Просто введи email в «Обогащение».
+                  <div style={{ fontSize: 11, color: accent, padding: "6px 8px" }}>
+                    Работает автоматически (в т.ч. на Vercel) — установка не нужна.
+                  </div>
+                ) : t.docker_builtin ? (
+                  <div style={{ fontSize: 11, color: accent, padding: "6px 8px" }}>
+                    Работает автоматически — но только при Docker-деплое (не на Vercel).
                   </div>
                 ) : (
                   <div onClick={() => copy(t.install, t.id)} title="Скопировать"
@@ -65,7 +71,8 @@ export default function ToolsView() {
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
